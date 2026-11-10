@@ -1,0 +1,317 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap');
+
+:root {
+  color-scheme: dark;
+  font-family: 'DM Sans', sans-serif;
+  color: #f8f5ef;
+  background: #06172d;
+  font-synthesis: none;
+  --navy: #071a33;
+  --navy-light: #0d2849;
+  --red: #d7193f;
+  --red-bright: #f03248;
+  --cream: #f8f5ef;
+  --muted: #9aa8b9;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 76% 15%, rgba(22, 67, 109, .45), transparent 27rem),
+    var(--navy);
+}
+
+a { color: inherit; }
+
+.page-shell {
+  width: min(1440px, 100%);
+  min-height: 100vh;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.site-header {
+  height: 88px;
+  padding: 0 clamp(24px, 5vw, 72px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255,255,255,.11);
+}
+
+.brand-lockup {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  text-decoration: none;
+}
+
+.matalan-logo {
+  width: 114px;
+  height: auto;
+  filter: brightness(0) invert(1);
+}
+
+.pacd-logo { width: 70px; height: auto; }
+
+.brand-divider { width: 1px; height: 22px; background: rgba(255,255,255,.28); }
+
+.header-label,
+.eyebrow,
+.section-heading,
+footer {
+  letter-spacing: .16em;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.header-label { color: #a7b4c3; }
+
+.hero {
+  min-height: 520px;
+  padding: 70px clamp(24px, 7vw, 104px) 56px;
+  display: grid;
+  grid-template-columns: 1.05fr .95fr;
+  align-items: center;
+  position: relative;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  width: 380px;
+  height: 380px;
+  border: 1px solid rgba(255,255,255,.05);
+  border-radius: 50%;
+  top: 42px;
+  right: -170px;
+}
+
+.hero-copy { position: relative; z-index: 2; }
+
+.eyebrow { color: #c7d0da; margin: 0 0 25px; }
+.eyebrow span { display: inline-block; width: 34px; height: 2px; margin: 0 12px 3px 0; background: var(--red-bright); }
+
+h1 {
+  margin: 0;
+  max-width: 700px;
+  font-family: 'Manrope', sans-serif;
+  font-size: clamp(43px, 5.3vw, 78px);
+  line-height: 1.04;
+  letter-spacing: -.055em;
+  font-weight: 800;
+}
+
+h1 em { color: var(--red-bright); font-style: normal; }
+
+.hero-intro {
+  max-width: 490px;
+  margin: 26px 0 28px;
+  color: #b7c1cd;
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+.jump-link {
+  display: inline-flex;
+  gap: 12px;
+  color: var(--cream);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.jump-link span { color: var(--red-bright); transition: transform .25s ease; }
+.jump-link:hover span { transform: translateY(4px); }
+
+.carton-scene {
+  width: min(470px, 100%);
+  height: 390px;
+  margin-left: auto;
+  position: relative;
+  animation: rise-in .8s ease-out both;
+}
+
+.orbit {
+  position: absolute;
+  border: 1px solid rgba(255,255,255,.11);
+  border-radius: 50%;
+  inset: 18px 8px 0 45px;
+}
+
+.orbit-two { inset: 72px 62px 48px 97px; border-color: rgba(240,50,72,.19); }
+
+.carton {
+  position: absolute;
+  transform: skewY(-6deg);
+  box-shadow: 18px 24px 40px rgba(0,0,0,.25);
+}
+
+.carton-back {
+  width: 185px;
+  height: 178px;
+  left: 58px;
+  top: 108px;
+  background: #132f50;
+  border: 1px solid rgba(255,255,255,.16);
+}
+
+.carton-back::before,
+.carton-front::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  top: -45px;
+  height: 45px;
+  background: inherit;
+  clip-path: polygon(0 100%, 24% 0, 100% 0, 100% 100%);
+  filter: brightness(1.16);
+}
+
+.carton-back span {
+  position: absolute;
+  left: 20px;
+  bottom: 18px;
+  color: rgba(255,255,255,.35);
+  font-weight: 700;
+  letter-spacing: .14em;
+  font-size: 11px;
+}
+
+.carton-front {
+  width: 213px;
+  height: 210px;
+  right: 48px;
+  top: 126px;
+  background: linear-gradient(145deg, #dc2141, #ad0e2c);
+}
+
+.carton-front::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: -35px;
+  width: 35px;
+  background: #850923;
+  clip-path: polygon(0 0, 100% 16%, 100% 100%, 0 100%);
+}
+
+.carton-tape { position: absolute; top: -39px; left: 91px; width: 37px; height: 249px; background: rgba(255,255,255,.12); }
+.carton-mark { position: absolute; left: 29px; top: 30px; font: 800 66px/1 'Manrope', sans-serif; color: rgba(255,255,255,.95); }
+.carton-lines { position: absolute; left: 31px; bottom: 30px; width: 62px; height: 22px; border-top: 2px solid rgba(255,255,255,.5); border-bottom: 2px solid rgba(255,255,255,.5); }
+.floor-line { position: absolute; left: 22px; right: 8px; bottom: 35px; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,.32), transparent); }
+
+.tools-section {
+  padding: 0 clamp(24px, 5vw, 72px) 64px;
+}
+
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  padding: 18px 0;
+  border-top: 1px solid rgba(255,255,255,.11);
+  color: #e6eaf0;
+}
+
+.section-heading p { margin: 0; }
+.section-heading span { color: #718398; font-weight: 500; letter-spacing: .08em; }
+
+.tool-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+
+.tool-card {
+  min-height: 285px;
+  padding: 26px;
+  display: flex;
+  flex-direction: column;
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.1);
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  transition: transform .3s ease, border-color .3s ease, background .3s ease;
+}
+
+.tool-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 55%, rgba(215,25,63,.18));
+  opacity: 0;
+  transition: opacity .3s ease;
+}
+
+.tool-card:hover,
+.tool-card:focus-visible {
+  transform: translateY(-6px);
+  border-color: rgba(240,50,72,.6);
+  background: rgba(255,255,255,.065);
+  outline: none;
+}
+
+.tool-card:hover::before,
+.tool-card:focus-visible::before { opacity: 1; }
+
+.card-topline { display: flex; align-items: flex-start; justify-content: space-between; position: relative; z-index: 1; }
+.tool-number { color: #6f8196; font-size: 12px; font-weight: 700; letter-spacing: .12em; }
+.tool-icon { width: 44px; height: 44px; display: grid; place-items: center; color: var(--red-bright); }
+.tool-icon svg { width: 39px; height: 39px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.card-copy { margin: 37px 0 28px; position: relative; z-index: 1; }
+.card-copy h2 { margin: 0 0 11px; font: 700 clamp(20px, 2vw, 26px)/1.2 'Manrope', sans-serif; letter-spacing: -.025em; }
+.card-copy p { margin: 0; max-width: 285px; color: var(--muted); font-size: 14px; line-height: 1.6; }
+.open-tool { margin-top: auto; display: flex; align-items: center; justify-content: space-between; color: #dce2e9; font-size: 12px; font-weight: 700; letter-spacing: .11em; text-transform: uppercase; position: relative; z-index: 1; }
+.arrow { width: 35px; height: 35px; display: grid; place-items: center; border-radius: 50%; background: var(--red); transition: transform .25s ease, background .25s ease; }
+.arrow svg { width: 16px; fill: none; stroke: white; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.tool-card:hover .arrow { transform: translateX(4px); background: var(--red-bright); }
+
+footer {
+  min-height: 74px;
+  padding: 0 clamp(24px, 5vw, 72px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid rgba(255,255,255,.08);
+  color: #66798f;
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; padding-top: 56px; }
+  .carton-scene { height: 330px; margin: 28px auto 0; transform: scale(.86); transform-origin: center; }
+  .tool-grid { grid-template-columns: 1fr; }
+  .tool-card { min-height: 235px; }
+  .card-copy { margin: 26px 0; }
+}
+
+@media (max-width: 560px) {
+  .site-header { height: 74px; }
+  .brand-lockup { gap: 12px; }
+  .matalan-logo { width: 90px; }
+  .pacd-logo { width: 56px; }
+  .brand-divider { height: 18px; }
+  .header-label { display: none; }
+  .hero { padding-top: 46px; padding-bottom: 28px; }
+  .hero-intro { font-size: 15px; }
+  .carton-scene { margin-left: -31px; width: calc(100% + 62px); transform: scale(.75); }
+  .section-heading span { display: none; }
+  .tools-section { padding-bottom: 42px; }
+  footer { gap: 16px; flex-direction: column; align-items: flex-start; justify-content: center; padding-top: 22px; padding-bottom: 22px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
