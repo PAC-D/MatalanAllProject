@@ -93,11 +93,7 @@ export default function App() {
       <main id="top">
         <section className="hero" aria-labelledby="hero-title">
           <div className="hero-copy">
-            <p className="eyebrow"><span /> ONE PLACE. THREE TOOLS.</p>
             <h1 id="hero-title">Matalan tools,<br /><em>ready when you are.</em></h1>
-            <p className="hero-intro">
-              Quick access to the tools that keep packaging and pricing moving.
-            </p>
             <a className="jump-link" href="#tools">
               Explore tools <span>↓</span>
             </a>
@@ -108,7 +104,6 @@ export default function App() {
         <section className="tools-section" id="tools" aria-label="Available tools">
           <div className="section-heading">
             <p>SELECT A TOOL</p>
-            <span>Open in a new tab</span>
           </div>
 
           <div className="tool-grid">
@@ -140,7 +135,6 @@ export default function App() {
 
       <footer>
         <span>POWERED BY PAC-D</span>
-        <span>Packaging tools for Matalan</span>
       </footer>
     </div>
   );
