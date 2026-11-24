@@ -34,11 +34,28 @@ function RegistrantsIcon() {
   );
 }
 
+function TrashIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 7h16M9 7V4h6v3m3 0-1 14H7L6 7m4 4v6m4-6v6" />
+    </svg>
+  );
+}
+
+function LogoutIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M14 5V3H4v18h10v-2M10 12h11m-4-4 4 4-4 4" />
+    </svg>
+  );
+}
+
 export default function Admin() {
   const [registrants, setRegistrants] = useState([]);
   const [loadState, setLoadState] = useState('loading');
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
   const filteredRegistrants = useMemo(() => {
     const term = query.trim().toLowerCase();
     if (!term) return registrants;
@@ -74,6 +91,38 @@ export default function Admin() {
     return () => { isActive = false; };
   }, []);
 
+  async function handleDelete(registrant) {
+    const confirmed = window.confirm(`Delete registration ${registrant.id} for ${registrant.supplierName}? This cannot be undone.`);
+    if (!confirmed) return;
+
+    setDeletingId(registrant.id);
+    try {
+      const response = await fetch(`/api/admin/registrations?id=${encodeURIComponent(registrant.id)}`, {
+        method: 'DELETE',
+        headers: { Accept: 'application/json' },
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Registration could not be deleted.');
+      setRegistrants((records) => records.filter((record) => record.id !== registrant.id));
+      setSelectedId(null);
+    } catch (error) {
+      window.alert(error.message || 'Registration could not be deleted.');
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  async function handleLogout() {
+    try {
+      await fetch('/api/admin/registrations', {
+        cache: 'no-store',
+        headers: { Authorization: `Basic ${window.btoa(`logout:${Date.now()}`)}` },
+      });
+    } finally {
+      window.location.replace('/');
+    }
+  }
+
   return (
     <main className="admin-page">
       <aside className="admin-sidebar">
@@ -94,6 +143,10 @@ export default function Admin() {
         <div className="admin-sidebar-foot">
           <span>TRANSIT PACKAGING</span>
           <strong>PHASE 3</strong>
+          <button className="admin-logout" type="button" onClick={handleLogout}>
+            <LogoutIcon />
+            Logout
+          </button>
         </div>
       </aside>
 
@@ -105,6 +158,9 @@ export default function Admin() {
           </div>
           <div className="admin-topbar-meta">
             <span>MAT / ADMIN / 01</span>
+            <button className="admin-logout admin-logout-mobile" type="button" onClick={handleLogout} aria-label="Logout">
+              <LogoutIcon />
+            </button>
             <img src={matalanLogo} alt="Matalan" />
           </div>
         </header>
@@ -215,7 +271,18 @@ export default function Admin() {
               <aside className="admin-detail" aria-label="Selected registrant details">
                 <div className="admin-detail-head">
                   <span>SELECTED RECORD</span>
-                  <strong>{selectedRegistrant.id}</strong>
+                  <div>
+                    <strong>{selectedRegistrant.id}</strong>
+                    <button
+                      className="admin-delete-entry"
+                      type="button"
+                      disabled={deletingId === selectedRegistrant.id}
+                      onClick={() => handleDelete(selectedRegistrant)}
+                    >
+                      <TrashIcon />
+                      {deletingId === selectedRegistrant.id ? 'Deleting' : 'Delete'}
+                    </button>
+                  </div>
                 </div>
                 <div className="admin-detail-company">
                   <span>{selectedRegistrant.supplierName.slice(0, 2).toUpperCase()}</span>

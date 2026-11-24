@@ -60,6 +60,7 @@ const insertAssignee = database.prepare(`
     registration_id, sequence_number, name, designation, email
   ) VALUES (?, ?, ?, ?, ?)
 `);
+const deleteRegistration = database.prepare('DELETE FROM registrations WHERE id = ?');
 
 function sendJson(response, status, payload) {
   response.writeHead(status, {
@@ -219,6 +220,21 @@ const server = createServer(async (request, response) => {
 
   if (request.method === 'GET' && url.pathname === '/api/admin/registrations') {
     sendJson(response, 200, { registrants: getRegistrations() });
+    return;
+  }
+
+  if (request.method === 'DELETE' && url.pathname === '/api/admin/registrations') {
+    const id = String(url.searchParams.get('id') || '').trim();
+    if (!/^MTP-[A-Z0-9-]+$/.test(id)) {
+      sendJson(response, 400, { ok: false, error: 'A valid registration ID is required.' });
+      return;
+    }
+    const result = deleteRegistration.run(id);
+    if (result.changes === 0) {
+      sendJson(response, 404, { ok: false, error: 'Registration not found.' });
+      return;
+    }
+    sendJson(response, 200, { ok: true, id });
     return;
   }
 
