@@ -42,11 +42,34 @@ jobs:
           chmod 600 ~/.ssh/lightsail_key
           ssh-keyscan -H "$LIGHTSAIL_HOST" >> ~/.ssh/known_hosts
 
-      - name: Deploy production files
+      - name: Deploy production application
         env:
           LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
           LIGHTSAIL_USER: ${{ secrets.LIGHTSAIL_USER }}
         run: |
-          rsync -az --delete \
-            -e "ssh -i ~/.ssh/lightsail_key -o IdentitiesOnly=yes" \
-            dist/ "$LIGHTSAIL_USER@$LIGHTSAIL_HOST:/var/www/matalan-portal/"
+          ssh -i ~/.ssh/lightsail_key -o IdentitiesOnly=yes \
+            "$LIGHTSAIL_USER@$LIGHTSAIL_HOST" 'bash -s' <<'REMOTE'
+          set -euo pipefail
+          project=/srv/matalan-projects/matalan-portal
+          cd "$project"
+
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Server checkout has local changes; refusing deployment."
+            exit 1
+          fi
+
+          git pull --ff-only origin main
+          npm ci --no-audit --no-fund
+          rm -rf "$project/.site-new"
+          npm run build -- --outDir "$project/.site-new"
+
+          rm -rf "$project/.site-old"
+          if [ -d "$project/site" ]; then
+            mv "$project/site" "$project/.site-old"
+          fi
+          mv "$project/.site-new" "$project/site"
+          rm -rf "$project/.site-old"
+
+          sudo systemctl restart matalan-registration-api.service
+          curl --fail --silent http://127.0.0.1:3100/api/health >/dev/null
+          REMOTE

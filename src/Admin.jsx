@@ -1,105 +1,26 @@
 import { useEffect, useMemo, useState } from 'react';
 import matalanLogo from '../assets/matalan logo.png';
 import pacdLogo from '../assets/pacd-logo.png';
+import { downloadRegistrantsExcel } from './utils/exportRegistrantsExcel';
 
-const assigneeRoles = ['Packaging Manager', 'Quality Manager', 'Production Lead', 'Compliance Officer', 'Warehouse Lead', 'Merchandiser'];
-
-function makeAssignees(domain, names) {
-  return names.map((name, index) => ({
-    name,
-    designation: assigneeRoles[index % assigneeRoles.length],
-    email: `${name.toLowerCase().replace(/[^a-z]+/g, '.').replace(/^\.|\.$/g, '')}@${domain}`,
-  }));
+function formatDate(value) {
+  if (!value) return '';
+  return new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(value));
 }
-
-const registrants = [
-  {
-    id: 'MTP-24018',
-    company: 'Apex Textile Manufacturing',
-    country: 'Bangladesh',
-    email: 'operations@apextextile.com',
-    phone: '+880 1712 884 310',
-    supplierChampion: 'Arif Rahman',
-    factoryChampion: 'Nadia Sultana',
-    jigs: 6,
-    lms: 4,
-    attention: 'Nadia Sultana',
-    address: 'Plot 18, DEPZ Road, Savar, Dhaka',
-    assignees: makeAssignees('apextextile.com', ['Tasnim Ahmed', 'Farhan Kabir', 'Maliha Noor', 'Imran Hossain']),
-    submitted: '24 Nov 2026',
-    status: 'Complete',
-  },
-  {
-    id: 'MTP-24017',
-    company: 'Evergreen Apparel Co.',
-    country: 'Vietnam',
-    email: 'linh.nguyen@evergreenapparel.vn',
-    phone: '+84 28 3821 4072',
-    supplierChampion: 'Linh Nguyen',
-    factoryChampion: 'Minh Tran',
-    jigs: 4,
-    lms: 3,
-    attention: 'Minh Tran',
-    address: 'Tan Thuan Export Zone, District 7, Ho Chi Minh City',
-    assignees: makeAssignees('evergreenapparel.vn', ['Anh Pham', 'Bao Le', 'Thao Vu']),
-    submitted: '23 Nov 2026',
-    status: 'Complete',
-  },
-  {
-    id: 'MTP-24016',
-    company: 'Horizon Garments Ltd.',
-    country: 'Sri Lanka',
-    email: 's.perera@horizongarments.lk',
-    phone: '+94 11 274 8801',
-    supplierChampion: 'Sameera Perera',
-    factoryChampion: 'Dinuka Silva',
-    jigs: 3,
-    lms: 5,
-    attention: 'Dinuka Silva',
-    address: 'Biyagama Export Processing Zone, Malwana',
-    assignees: makeAssignees('horizongarments.lk', ['Ishara Fernando', 'Kavindi Jayasuriya', 'Nimal De Silva', 'Tharushi Dias', 'Kasun Gunasekara']),
-    submitted: '22 Nov 2026',
-    status: 'Review',
-  },
-  {
-    id: 'MTP-24015',
-    company: 'Shakti Exports',
-    country: 'India',
-    email: 'packaging@shaktiexports.in',
-    phone: '+91 80 4127 3090',
-    supplierChampion: 'Priya Mehta',
-    factoryChampion: 'Ravi Kumar',
-    jigs: 8,
-    lms: 6,
-    attention: 'Ravi Kumar',
-    address: 'Peenya Industrial Area, Bengaluru, Karnataka',
-    assignees: makeAssignees('shaktiexports.in', ['Ananya Rao', 'Vikram Shah', 'Neha Iyer', 'Rohan Singh', 'Kiran Patel', 'Meera Nair']),
-    submitted: '21 Nov 2026',
-    status: 'Complete',
-  },
-  {
-    id: 'MTP-24014',
-    company: 'Ningbo Modern Fashion',
-    country: 'China',
-    email: 'export@nbmodern.cn',
-    phone: '+86 574 8812 7900',
-    supplierChampion: 'Chen Wei',
-    factoryChampion: 'Li Jing',
-    jigs: 5,
-    lms: 4,
-    attention: 'Li Jing',
-    address: 'Beilun Industrial District, Ningbo, Zhejiang',
-    assignees: makeAssignees('nbmodern.cn', ['Wang Fang', 'Zhang Min', 'Liu Yang', 'Zhao Lei']),
-    submitted: '20 Nov 2026',
-    status: 'Review',
-  },
-];
 
 function SearchIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <circle cx="11" cy="11" r="6.5" />
       <path d="m16 16 4 4" />
+    </svg>
+  );
+}
+
+function DownloadIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 3v12m-4-4 4 4 4-4M5 20h14" />
     </svg>
   );
 }
@@ -114,22 +35,41 @@ function RegistrantsIcon() {
 }
 
 export default function Admin() {
+  const [registrants, setRegistrants] = useState([]);
+  const [loadState, setLoadState] = useState('loading');
   const [query, setQuery] = useState('');
-  const [selectedId, setSelectedId] = useState(registrants[0].id);
+  const [selectedId, setSelectedId] = useState(null);
   const filteredRegistrants = useMemo(() => {
     const term = query.trim().toLowerCase();
     if (!term) return registrants;
     return registrants.filter((registrant) => (
-      `${registrant.company} ${registrant.country} ${registrant.email} ${registrant.id}`
+      `${registrant.supplierName} ${registrant.factoryName} ${registrant.country} ${registrant.contactEmail} ${registrant.id}`
         .toLowerCase()
         .includes(term)
     ));
   }, [query]);
-  const selectedRegistrant = registrants.find((registrant) => registrant.id === selectedId) || registrants[0];
+  const selectedRegistrant = registrants.find((registrant) => registrant.id === selectedId) || null;
 
   useEffect(() => {
     document.title = 'Registrants | Matalan Admin';
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#081d36');
+    let isActive = true;
+    fetch('/api/admin/registrations', { headers: { Accept: 'application/json' } })
+      .then(async (response) => {
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Registration data could not be loaded.');
+        return result.registrants || [];
+      })
+      .then((records) => {
+        if (!isActive) return;
+        setRegistrants(records);
+        setSelectedId(records[0]?.id || null);
+        setLoadState('ready');
+      })
+      .catch(() => {
+        if (isActive) setLoadState('error');
+      });
+    return () => { isActive = false; };
   }, []);
 
   return (
@@ -173,15 +113,26 @@ export default function Admin() {
               <span className="admin-eyebrow">REGISTRATION DATA</span>
               <h1>Registrants</h1>
             </div>
-            <div className="admin-search">
-              <SearchIcon />
-              <input
-                type="search"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search registrants"
-                aria-label="Search registrants"
-              />
+            <div className="admin-page-actions">
+              <div className="admin-search">
+                <SearchIcon />
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Search registrants"
+                  aria-label="Search registrants"
+                />
+              </div>
+              <button
+                className="admin-export-button"
+                type="button"
+                disabled={registrants.length === 0}
+                onClick={() => downloadRegistrantsExcel(registrants)}
+              >
+                <DownloadIcon />
+                Download Excel
+              </button>
             </div>
           </header>
 
@@ -192,33 +143,33 @@ export default function Admin() {
             </div>
             <div className="admin-stat">
               <span>JIGS REQUIRED</span>
-              <strong>{registrants.reduce((total, item) => total + item.jigs, 0)}</strong>
+              <strong>{registrants.reduce((total, item) => total + Number(item.jigsQuantity || 0), 0)}</strong>
             </div>
             <div className="admin-stat">
               <span>LMS ASSIGNEES</span>
-              <strong>{registrants.reduce((total, item) => total + item.lms, 0)}</strong>
+              <strong>{registrants.reduce((total, item) => total + (item.assignees?.length || 0), 0)}</strong>
             </div>
             <div className="admin-stat">
-              <span>REQUIRES REVIEW</span>
-              <strong>{registrants.filter((item) => item.status === 'Review').length}</strong>
+              <span>COUNTRIES</span>
+              <strong>{new Set(registrants.map((item) => item.country)).size}</strong>
             </div>
           </section>
 
-          <div className="admin-data-layout">
+          <div className={`admin-data-layout ${selectedRegistrant ? '' : 'is-empty'}`}>
             <section className="admin-table-panel" aria-labelledby="registrant-table-title">
               <div className="admin-panel-heading">
                 <div>
                   <h2 id="registrant-table-title">Registration records</h2>
                   <span>{filteredRegistrants.length} records</span>
                 </div>
-                <span className="admin-static-label">STATIC DATA</span>
               </div>
 
               <div className="admin-table-wrap">
                 <table className="admin-table">
                   <thead>
                     <tr>
-                      <th>Registrant</th>
+                      <th>Supplier</th>
+                      <th>Factory</th>
                       <th>Country</th>
                       <th>Jigs</th>
                       <th>LMS</th>
@@ -229,71 +180,82 @@ export default function Admin() {
                   <tbody>
                     {filteredRegistrants.map((registrant) => (
                       <tr
-                        className={selectedRegistrant.id === registrant.id ? 'is-selected' : ''}
+                        className={selectedRegistrant?.id === registrant.id ? 'is-selected' : ''}
                         key={registrant.id}
                         onClick={() => setSelectedId(registrant.id)}
                       >
                         <td>
                           <span className="admin-company-cell">
-                            <strong>{registrant.company}</strong>
+                            <strong>{registrant.supplierName}</strong>
                             <small>{registrant.id}</small>
                           </span>
                         </td>
+                        <td>{registrant.factoryName}</td>
                         <td>{registrant.country}</td>
-                        <td>{String(registrant.jigs).padStart(2, '0')}</td>
-                        <td>{String(registrant.lms).padStart(2, '0')}</td>
-                        <td>{registrant.submitted}</td>
+                        <td>{String(registrant.jigsQuantity).padStart(2, '0')}</td>
+                        <td>{String(registrant.assignees?.length || 0).padStart(2, '0')}</td>
+                        <td>{formatDate(registrant.submittedAt)}</td>
                         <td><span className={`admin-status is-${registrant.status.toLowerCase()}`}>{registrant.status}</span></td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-                {filteredRegistrants.length === 0 && <div className="admin-empty">No matching registrants.</div>}
+                {filteredRegistrants.length === 0 && (
+                  <div className="admin-empty">
+                    <strong>{loadState === 'loading' ? 'Loading registration records' : loadState === 'error' ? 'Registration data unavailable' : registrants.length === 0 ? 'No registration records yet' : 'No matching registrants'}</strong>
+                    <span>{loadState === 'loading' ? 'Please wait.' : loadState === 'error' ? 'Refresh the page to try again.' : registrants.length === 0 ? 'Submitted registrations will appear here.' : 'Try a different search term.'}</span>
+                  </div>
+                )}
               </div>
             </section>
 
-            <aside className="admin-detail" aria-label="Selected registrant details">
-              <div className="admin-detail-head">
-                <span>SELECTED RECORD</span>
-                <strong>{selectedRegistrant.id}</strong>
-              </div>
-              <div className="admin-detail-company">
-                <span>{selectedRegistrant.company.slice(0, 2).toUpperCase()}</span>
-                <div>
-                  <h2>{selectedRegistrant.company}</h2>
-                  <p>{selectedRegistrant.country}</p>
+            {selectedRegistrant && (
+              <aside className="admin-detail" aria-label="Selected registrant details">
+                <div className="admin-detail-head">
+                  <span>SELECTED RECORD</span>
+                  <strong>{selectedRegistrant.id}</strong>
                 </div>
-              </div>
-              <dl className="admin-detail-list">
-                <div><dt>Supplier champion</dt><dd>{selectedRegistrant.supplierChampion}</dd></div>
-                <div><dt>Factory champion</dt><dd>{selectedRegistrant.factoryChampion}</dd></div>
-                <div><dt>Attention</dt><dd>{selectedRegistrant.attention}</dd></div>
-                <div><dt>Contact</dt><dd>{selectedRegistrant.phone}<br />{selectedRegistrant.email}</dd></div>
-                <div><dt>Delivery address</dt><dd>{selectedRegistrant.address}</dd></div>
-                <div className="admin-detail-quantity">
-                  <span><dt>Jigs</dt><dd>{selectedRegistrant.jigs}</dd></span>
-                  <span><dt>LMS</dt><dd>{selectedRegistrant.lms}</dd></span>
+                <div className="admin-detail-company">
+                  <span>{selectedRegistrant.supplierName.slice(0, 2).toUpperCase()}</span>
+                  <div>
+                    <h2>{selectedRegistrant.supplierName}</h2>
+                    <p>{selectedRegistrant.country}</p>
+                  </div>
                 </div>
-              </dl>
-              <div className="admin-assignees">
-                <div className="admin-assignees-heading">
-                  <h3>LMS assignees</h3>
-                  <span>{selectedRegistrant.assignees.length}</span>
-                </div>
-                <div className="admin-assignee-list">
-                  {selectedRegistrant.assignees.map((assignee, index) => (
-                    <div className="admin-assignee" key={assignee.email}>
-                      <span>{String(index + 1).padStart(2, '0')}</span>
-                      <div>
-                        <strong>{assignee.name}</strong>
-                        <small>{assignee.designation}</small>
-                        <a href={`mailto:${assignee.email}`}>{assignee.email}</a>
+                <dl className="admin-detail-list">
+                  <div><dt>Supplier</dt><dd>{selectedRegistrant.supplierName}</dd></div>
+                  <div><dt>Supplier champion</dt><dd>{selectedRegistrant.supplierChampion}</dd></div>
+                  <div><dt>Factory</dt><dd>{selectedRegistrant.factoryName}</dd></div>
+                  <div><dt>Factory champion</dt><dd>{selectedRegistrant.factoryChampion}</dd></div>
+                  <div><dt>Distribution supplier</dt><dd>{selectedRegistrant.distributionSupplierName}</dd></div>
+                  <div><dt>Attention</dt><dd>{selectedRegistrant.attentionName}</dd></div>
+                  <div><dt>Contact</dt><dd>{selectedRegistrant.contactPhone}<br />{selectedRegistrant.contactEmail}</dd></div>
+                  <div><dt>Delivery address</dt><dd>{selectedRegistrant.detailsAddress}</dd></div>
+                  <div className="admin-detail-quantity">
+                    <span><dt>Jigs</dt><dd>{selectedRegistrant.jigsQuantity}</dd></span>
+                    <span><dt>LMS</dt><dd>{selectedRegistrant.assignees?.length || 0}</dd></span>
+                  </div>
+                </dl>
+                <div className="admin-assignees">
+                  <div className="admin-assignees-heading">
+                    <h3>LMS assignees</h3>
+                    <span>{selectedRegistrant.assignees?.length || 0}</span>
+                  </div>
+                  <div className="admin-assignee-list">
+                    {(selectedRegistrant.assignees || []).map((assignee, index) => (
+                      <div className="admin-assignee" key={`${assignee.email}-${index}`}>
+                        <span>{String(index + 1).padStart(2, '0')}</span>
+                        <div>
+                          <strong>{assignee.name}</strong>
+                          <small>{assignee.designation}</small>
+                          <a href={`mailto:${assignee.email}`}>{assignee.email}</a>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </aside>
+              </aside>
+            )}
           </div>
         </div>
       </section>

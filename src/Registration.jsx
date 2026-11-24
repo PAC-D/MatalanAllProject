@@ -1,6 +1,114 @@
 import { useEffect, useMemo, useState } from 'react';
 import matalanLogo from '../assets/matalan logo.png';
 import pacdLogo from '../assets/pacd-logo.png';
+import { getNamesForCountry, registrationCountries } from './data/registrationOptions';
+
+function SuggestionField({ id, label, options, value, onChange, placeholder, allowCustom = true }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const query = value.trim().toLocaleLowerCase();
+  const exactMatch = options.some((option) => option.toLocaleLowerCase() === query);
+  const matches = query
+    ? options
+      .filter((option) => option.toLocaleLowerCase().includes(query))
+      .sort((a, b) => {
+        const aStarts = a.toLocaleLowerCase().startsWith(query);
+        const bStarts = b.toLocaleLowerCase().startsWith(query);
+        if (aStarts !== bStarts) return aStarts ? -1 : 1;
+        return a.localeCompare(b);
+      })
+      .slice(0, 7)
+    : [];
+  const showCustomOption = allowCustom && query && !exactMatch;
+  const showMenu = isOpen && query && (matches.length > 0 || showCustomOption);
+  const selectableValues = showCustomOption ? [...matches, value.trim()] : matches;
+
+  function chooseValue(nextValue) {
+    onChange(nextValue);
+    setIsOpen(false);
+    setHighlightedIndex(-1);
+  }
+
+  return (
+    <div className="field suggestion-field">
+      <label htmlFor={id}>{label}</label>
+      <div className="suggestion-control">
+        <input
+          id={id}
+          name={id}
+          type="text"
+          value={value}
+          placeholder={placeholder}
+          autoComplete="off"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded={showMenu}
+          aria-controls={`${id}-suggestions`}
+          onChange={(event) => {
+            onChange(event.target.value);
+            setIsOpen(true);
+            setHighlightedIndex(-1);
+          }}
+          onFocus={() => setIsOpen(true)}
+          onBlur={() => window.setTimeout(() => setIsOpen(false), 100)}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') {
+              setIsOpen(false);
+              setHighlightedIndex(-1);
+              return;
+            }
+            if (!showMenu) return;
+            if (event.key === 'ArrowDown') {
+              event.preventDefault();
+              setHighlightedIndex((index) => Math.min(index + 1, selectableValues.length - 1));
+            }
+            if (event.key === 'ArrowUp') {
+              event.preventDefault();
+              setHighlightedIndex((index) => Math.max(index - 1, 0));
+            }
+            if (event.key === 'Enter' && highlightedIndex >= 0) {
+              event.preventDefault();
+              chooseValue(selectableValues[highlightedIndex]);
+            }
+          }}
+          required
+        />
+        <svg viewBox="0 0 20 20" aria-hidden="true">
+          <path d="m5.5 7.5 4.5 4.5 4.5-4.5" />
+        </svg>
+        {showMenu && (
+          <div className="suggestion-menu" id={`${id}-suggestions`} role="listbox">
+            {matches.map((option, index) => (
+              <button
+                className={highlightedIndex === index ? 'is-highlighted' : ''}
+                type="button"
+                role="option"
+                aria-selected={highlightedIndex === index}
+                key={option}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => chooseValue(option)}
+              >
+                {option}
+              </button>
+            ))}
+            {showCustomOption && (
+              <button
+                className={`suggestion-custom ${highlightedIndex === matches.length ? 'is-highlighted' : ''}`}
+                type="button"
+                role="option"
+                aria-selected={highlightedIndex === matches.length}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => chooseValue(value.trim())}
+              >
+                Use “{value.trim()}”
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function PackageScene() {
   return (
@@ -66,7 +174,12 @@ function SectionHeading({ id, number, title }) {
 
 export default function Registration() {
   const [assigneeCount, setAssigneeCount] = useState(1);
-  const [submitted, setSubmitted] = useState(false);
+  const [submission, setSubmission] = useState({ state: 'idle', message: '' });
+  const [country, setCountry] = useState('');
+  const [supplierName, setSupplierName] = useState('');
+  const [factoryName, setFactoryName] = useState('');
+  const [distributionSupplierName, setDistributionSupplierName] = useState('');
+  const countryNames = useMemo(() => getNamesForCountry(country), [country]);
   const assignees = useMemo(
     () => Array.from({ length: Math.min(Math.max(Number(assigneeCount) || 0, 0), 20) }),
     [assigneeCount],
@@ -77,9 +190,56 @@ export default function Registration() {
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#06182e');
   }, []);
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    setSubmitted(true);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const payload = {
+      country,
+      supplierName,
+      supplierChampion: formData.get('supplierChampion'),
+      factoryName,
+      factoryChampion: formData.get('factoryChampion'),
+      jigsQuantity: Number(formData.get('jigsQuantity')),
+      distributionSupplierName,
+      detailsAddress: formData.get('detailsAddress'),
+      attentionName: formData.get('attentionName'),
+      contactPhone: formData.get('contactPhone'),
+      contactEmail: formData.get('contactEmail'),
+      assignees: assignees.map((_, index) => ({
+        name: formData.get(`assignees[${index}].name`),
+        designation: formData.get(`assignees[${index}].designation`),
+        email: formData.get(`assignees[${index}].email`),
+      })),
+    };
+
+    setSubmission({ state: 'submitting', message: 'Submitting registration...' });
+    try {
+      const response = await fetch('/api/registrations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Registration could not be submitted.');
+
+      form.reset();
+      setCountry('');
+      setSupplierName('');
+      setFactoryName('');
+      setDistributionSupplierName('');
+      setAssigneeCount(1);
+      setSubmission({ state: 'success', message: `Registration ${result.id} submitted.` });
+    } catch (error) {
+      setSubmission({ state: 'error', message: error.message || 'Registration could not be submitted.' });
+    }
+  }
+
+  function handleCountryChange(nextCountry) {
+    setCountry(nextCountry);
+    setSupplierName('');
+    setFactoryName('');
+    setDistributionSupplierName('');
   }
 
   return (
@@ -108,28 +268,37 @@ export default function Registration() {
           <section className="form-section" aria-labelledby="part-one-title">
             <SectionHeading id="part-one-title" number="01" title="Packaging Champions" />
             <div className="form-grid">
-              <label className="field field-full" htmlFor="country">
-                <span>Country</span>
-                <select id="country" name="country" defaultValue="" required>
-                  <option value="" disabled>Select country</option>
-                </select>
-              </label>
-              <label className="field" htmlFor="supplierName">
-                <span>Supplier Name</span>
-                <select id="supplierName" name="supplierName" defaultValue="" required>
-                  <option value="" disabled>Select supplier</option>
-                </select>
-              </label>
+              <div className="field-full">
+                <SuggestionField
+                  id="country"
+                  label="Country"
+                  options={registrationCountries}
+                  value={country}
+                  onChange={handleCountryChange}
+                  placeholder="Type country name"
+                  allowCustom={false}
+                />
+              </div>
+              <SuggestionField
+                id="supplierName"
+                label="Supplier Name"
+                options={countryNames}
+                value={supplierName}
+                onChange={setSupplierName}
+                placeholder="Type supplier name"
+              />
               <label className="field" htmlFor="supplierChampion">
                 <span>Supplier End Packaging Champion</span>
                 <input id="supplierChampion" name="supplierChampion" type="text" placeholder="Enter champion name" required />
               </label>
-              <label className="field" htmlFor="factoryName">
-                <span>Factory Name</span>
-                <select id="factoryName" name="factoryName" defaultValue="" required>
-                  <option value="" disabled>Select factory</option>
-                </select>
-              </label>
+              <SuggestionField
+                id="factoryName"
+                label="Factory Name"
+                options={countryNames}
+                value={factoryName}
+                onChange={setFactoryName}
+                placeholder="Type factory name"
+              />
               <label className="field" htmlFor="factoryChampion">
                 <span>Factory End Packaging Champion</span>
                 <input id="factoryChampion" name="factoryChampion" type="text" placeholder="Enter champion name" required />
@@ -144,12 +313,14 @@ export default function Registration() {
                 <span>Jigs Quantity</span>
                 <input id="jigsQuantity" name="jigsQuantity" type="number" min="1" placeholder="0" required />
               </label>
-              <label className="field" htmlFor="distributionSupplierName">
-                <span>Supplier Name</span>
-                <select id="distributionSupplierName" name="distributionSupplierName" defaultValue="" required>
-                  <option value="" disabled>Select supplier</option>
-                </select>
-              </label>
+              <SuggestionField
+                id="distributionSupplierName"
+                label="Supplier Name"
+                options={countryNames}
+                value={distributionSupplierName}
+                onChange={setDistributionSupplierName}
+                placeholder="Type supplier name"
+              />
               <label className="field field-full" htmlFor="detailsAddress">
                 <span>Details Address</span>
                 <textarea id="detailsAddress" name="detailsAddress" rows="3" placeholder="Enter delivery address" required />
@@ -209,10 +380,12 @@ export default function Registration() {
           </section>
 
           <div className="form-actions">
-            <span className={`demo-message ${submitted ? 'is-visible' : ''}`} role="status">
-              Demo complete. No data was sent.
+            <span className={`demo-message ${submission.state !== 'idle' ? 'is-visible' : ''} ${submission.state === 'error' ? 'is-error' : ''}`} role="status">
+              {submission.message}
             </span>
-            <button type="submit">Submit registration</button>
+            <button type="submit" disabled={submission.state === 'submitting'}>
+              {submission.state === 'submitting' ? 'Submitting...' : 'Submit registration'}
+            </button>
           </div>
         </form>
       </section>
