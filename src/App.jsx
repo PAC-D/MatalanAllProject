@@ -1,5 +1,6 @@
 import matalanLogo from '../assets/matalan logo.png';
 import pacdLogo from '../assets/pacd-logo.png';
+import Registration from './Registration';
 
 const tools = [
   {
@@ -79,6 +80,10 @@ function CartonIllustration() {
 }
 
 export default function App() {
+  if (window.location.pathname.replace(/\/+$/, '') === '/registration') {
+    return <Registration />;
+  }
+
   return (
     <div className="page-shell">
       <header className="site-header">
