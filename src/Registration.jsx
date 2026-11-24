@@ -110,7 +110,7 @@ function SuggestionField({ id, label, options, value, onChange, placeholder, all
   );
 }
 
-export function PackageScene() {
+function PackageScene() {
   return (
     <div className="package-visual" aria-hidden="true">
       <svg className="carton-stack" viewBox="0 0 520 560">

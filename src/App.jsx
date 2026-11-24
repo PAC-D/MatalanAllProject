@@ -1,27 +1,27 @@
 import matalanLogo from '../assets/matalan logo.png';
 import pacdLogo from '../assets/pacd-logo.png';
 import Admin from './Admin';
-import Registration, { PackageScene } from './Registration';
+import Registration from './Registration';
 
 const tools = [
   {
     number: '01',
     title: 'Carton Supply Report',
-    description: 'Carton supply information and reporting.',
+    description: 'Review carton supply information and reporting.',
     href: 'https://matalan.pac-d.com/carton-supply-report/',
     icon: 'carton',
   },
   {
     number: '02',
     title: 'Price Calculator',
-    description: 'Matalan packaging price calculations.',
+    description: 'Calculate and manage Matalan pricing with ease.',
     href: 'https://pac-d.github.io/matalanpricecalculator_mgt/',
     icon: 'calculator',
   },
   {
     number: '03',
     title: 'Label Generator',
-    description: 'Product label creation and output.',
+    description: 'Create ready-to-use product labels in a few steps.',
     href: 'https://pac-d.github.io/Matalan-Label-Generator-v2/',
     icon: 'label',
   },
@@ -54,12 +54,29 @@ function ToolIcon({ type }) {
   );
 }
 
-function LockIcon() {
+function ArrowIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
-      <rect x="5" y="10" width="14" height="11" rx="1" />
-      <path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3" />
+      <path d="M5 12h14m-6-6 6 6-6 6" />
     </svg>
+  );
+}
+
+function CartonIllustration() {
+  return (
+    <div className="carton-scene" aria-hidden="true">
+      <div className="orbit orbit-one" />
+      <div className="orbit orbit-two" />
+      <div className="carton carton-back">
+        <span>PAC-D</span>
+      </div>
+      <div className="carton carton-front">
+        <span className="carton-tape" />
+        <span className="carton-mark">M</span>
+        <span className="carton-lines" />
+      </div>
+      <div className="floor-line" />
+    </div>
   );
 }
 
@@ -73,72 +90,61 @@ export default function App() {
   }
 
   return (
-    <div className="portal-page">
-      <header className="portal-header">
-        <a className="portal-pacd" href="/" aria-label="PAC-D home">
-          <img src={pacdLogo} alt="PAC-D" />
+    <div className="page-shell">
+      <header className="site-header">
+        <a className="brand-lockup" href="#top" aria-label="Matalan and PAC-D home">
+          <img className="matalan-logo" src={matalanLogo} alt="Matalan" />
+          <span className="brand-divider" />
+          <img className="pacd-logo" src={pacdLogo} alt="PAC-D" />
         </a>
-        <div className="portal-header-right">
-          <img className="portal-matalan" src={matalanLogo} alt="Matalan" />
-          <a className="portal-login" href="/admin">
-            <LockIcon />
-            <span>Admin login</span>
-          </a>
-        </div>
+        <span className="header-label">TOOLS PORTAL</span>
       </header>
 
-      <main className="portal-main">
-        <section className="portal-program" aria-labelledby="portal-title">
-          <div className="portal-program-copy">
-            <span className="portal-phase">PHASE 3</span>
-            <h1 id="portal-title">
-              Matalan Transit
-              <span>Packaging Program</span>
-            </h1>
-            <div className="portal-program-code">
-              <span>MAT / TP / 03</span>
-              <strong>OPERATIONS</strong>
-            </div>
+      <main id="top">
+        <section className="hero" aria-labelledby="hero-title">
+          <div className="hero-copy">
+            <h1 id="hero-title">Matalan tools,<br /><em>ready when you are.</em></h1>
+            <a className="jump-link" href="#tools">
+              Explore tools <span>↓</span>
+            </a>
           </div>
-          <div className="portal-carton-panel">
-            <PackageScene />
-          </div>
+          <CartonIllustration />
         </section>
 
-        <section className="portal-tools" aria-labelledby="portal-tools-title">
-          <header className="portal-tools-heading">
-            <h2 id="portal-tools-title">Program tools</h2>
-            <span>{String(tools.length).padStart(2, '0')} MODULES</span>
-          </header>
+        <section className="tools-section" id="tools" aria-label="Available tools">
+          <div className="section-heading">
+            <p>SELECT A TOOL</p>
+          </div>
 
-          <div className="portal-tool-grid">
+          <div className="tool-grid">
             {tools.map((tool) => (
               <a
-                className="portal-tool-card"
+                className="tool-card"
                 href={tool.href}
                 target="_blank"
                 rel="noreferrer"
                 key={tool.title}
                 aria-label={`Open ${tool.title}`}
               >
-                <div className="portal-tool-topline">
-                  <span className="portal-tool-code">MAT / {tool.number}</span>
-                  <span className="portal-tool-icon"><ToolIcon type={tool.icon} /></span>
+                <div className="card-topline">
+                  <span className="tool-number">{tool.number}</span>
+                  <span className="tool-icon"><ToolIcon type={tool.icon} /></span>
                 </div>
-                <div className="portal-tool-copy">
-                  <h3>{tool.title}</h3>
+                <div className="card-copy">
+                  <h2>{tool.title}</h2>
                   <p>{tool.description}</p>
                 </div>
-                <span className="portal-tool-open">Open</span>
+                <span className="open-tool">
+                  Open tool <span className="arrow"><ArrowIcon /></span>
+                </span>
               </a>
             ))}
           </div>
         </section>
       </main>
 
-      <footer className="portal-footer">
-        <span>MAT / TRANSIT PACKAGING</span>
-        <strong>PHASE 3</strong>
+      <footer>
+        <span>POWERED BY PAC-D</span>
       </footer>
     </div>
   );
