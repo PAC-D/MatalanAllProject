@@ -29,29 +29,43 @@ function worksheet(name, headers, rows) {
 export function downloadRegistrantsExcel(registrants) {
   if (!registrants.length) return;
 
+  const maximumAssignees = Math.max(...registrants.map((registrant) => registrant.assignees?.length || 0));
+  const assigneeDetailHeaders = Array.from({ length: maximumAssignees }, (_, index) => [
+    `Assignee ${index + 1} Name`,
+    `Assignee ${index + 1} Designation`,
+    `Assignee ${index + 1} Email`,
+  ]).flat();
   const registrationHeaders = [
     'Registration ID', 'Country', 'Supplier Name', 'Supplier End Packaging Champion',
     'Factory Name', 'Factory End Packaging Champion', 'Jigs Quantity',
     'Distribution Supplier Name', 'Delivery Address', 'Attention Name', 'Phone',
-    'Email', 'LMS Assignee Count', 'Submitted At', 'Status',
+    'Email', 'LMS Assignee Count', ...assigneeDetailHeaders, 'Submitted At', 'Status',
   ];
-  const registrationRows = registrants.map((registrant) => [
-    registrant.id,
-    registrant.country,
-    registrant.supplierName,
-    registrant.supplierChampion,
-    registrant.factoryName,
-    registrant.factoryChampion,
-    Number(registrant.jigsQuantity || 0),
-    registrant.distributionSupplierName,
-    registrant.detailsAddress,
-    registrant.attentionName,
-    registrant.contactPhone,
-    registrant.contactEmail,
-    registrant.assignees?.length || 0,
-    registrant.submittedAt,
-    registrant.status,
-  ]);
+  const registrationRows = registrants.map((registrant) => {
+    const assigneeDetails = Array.from({ length: maximumAssignees }, (_, index) => {
+      const assignee = registrant.assignees?.[index];
+      return [assignee?.name || '', assignee?.designation || '', assignee?.email || ''];
+    }).flat();
+
+    return [
+      registrant.id,
+      registrant.country,
+      registrant.supplierName,
+      registrant.supplierChampion,
+      registrant.factoryName,
+      registrant.factoryChampion,
+      Number(registrant.jigsQuantity || 0),
+      registrant.distributionSupplierName,
+      registrant.detailsAddress,
+      registrant.attentionName,
+      registrant.contactPhone,
+      registrant.contactEmail,
+      registrant.assignees?.length || 0,
+      ...assigneeDetails,
+      registrant.submittedAt,
+      registrant.status,
+    ];
+  });
 
   const assigneeHeaders = [
     'Registration ID', 'Country', 'Supplier Name', 'Factory Name', 'Assignee Number',

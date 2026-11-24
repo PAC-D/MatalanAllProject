@@ -47,8 +47,10 @@ export default function Admin() {
         .toLowerCase()
         .includes(term)
     ));
-  }, [query]);
-  const selectedRegistrant = registrants.find((registrant) => registrant.id === selectedId) || null;
+  }, [query, registrants]);
+  const selectedRegistrant = filteredRegistrants.find((registrant) => registrant.id === selectedId)
+    || filteredRegistrants[0]
+    || null;
 
   useEffect(() => {
     document.title = 'Registrants | Matalan Admin';
