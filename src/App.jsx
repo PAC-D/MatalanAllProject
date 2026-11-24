@@ -1,5 +1,6 @@
 import matalanLogo from '../assets/matalan logo.png';
 import pacdLogo from '../assets/pacd-logo.png';
+import Admin from './Admin';
 import Registration from './Registration';
 
 const tools = [
@@ -80,6 +81,10 @@ function CartonIllustration() {
 }
 
 export default function App() {
+  if (window.location.pathname.replace(/\/+$/, '') === '/admin') {
+    return <Admin />;
+  }
+
   if (window.location.pathname.replace(/\/+$/, '') === '/registration') {
     return <Registration />;
   }

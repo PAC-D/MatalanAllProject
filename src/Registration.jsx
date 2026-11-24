@@ -2,33 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import matalanLogo from '../assets/matalan logo.png';
 import pacdLogo from '../assets/pacd-logo.png';
 
-const championOptions = [];
-
-function ChampionField({ id, label }) {
-  return (
-    <label className="field field-full" htmlFor={id}>
-      <span>{label}</span>
-      <span className="combo-control">
-        <input
-          id={id}
-          name={id}
-          list={`${id}-options`}
-          placeholder="Select or enter a name"
-          autoComplete="off"
-          required
-        />
-        <svg viewBox="0 0 20 20" aria-hidden="true">
-          <path d="m5.5 7.5 4.5 4.5 4.5-4.5" />
-        </svg>
-      </span>
-      <datalist id={`${id}-options`}>
-        {championOptions.map((option) => <option value={option} key={option} />)}
-      </datalist>
-      <small>Choose from the list or type a name.</small>
-    </label>
-  );
-}
-
 function PackageScene() {
   return (
     <div className="package-visual" aria-hidden="true">
@@ -141,8 +114,26 @@ export default function Registration() {
                   <option value="" disabled>Select country</option>
                 </select>
               </label>
-              <ChampionField id="supplierChampion" label="Supplier End Packaging Champion" />
-              <ChampionField id="factoryChampion" label="Factory End Packaging Champion" />
+              <label className="field" htmlFor="supplierName">
+                <span>Supplier Name</span>
+                <select id="supplierName" name="supplierName" defaultValue="" required>
+                  <option value="" disabled>Select supplier</option>
+                </select>
+              </label>
+              <label className="field" htmlFor="supplierChampion">
+                <span>Supplier End Packaging Champion</span>
+                <input id="supplierChampion" name="supplierChampion" type="text" placeholder="Enter champion name" required />
+              </label>
+              <label className="field" htmlFor="factoryName">
+                <span>Factory Name</span>
+                <select id="factoryName" name="factoryName" defaultValue="" required>
+                  <option value="" disabled>Select factory</option>
+                </select>
+              </label>
+              <label className="field" htmlFor="factoryChampion">
+                <span>Factory End Packaging Champion</span>
+                <input id="factoryChampion" name="factoryChampion" type="text" placeholder="Enter champion name" required />
+              </label>
             </div>
           </section>
 
@@ -153,9 +144,11 @@ export default function Registration() {
                 <span>Jigs Quantity</span>
                 <input id="jigsQuantity" name="jigsQuantity" type="number" min="1" placeholder="0" required />
               </label>
-              <label className="field" htmlFor="supplierFactoryName">
-                <span>Supplier / Factory Name</span>
-                <input id="supplierFactoryName" name="supplierFactoryName" type="text" placeholder="Enter name" required />
+              <label className="field" htmlFor="distributionSupplierName">
+                <span>Supplier Name</span>
+                <select id="distributionSupplierName" name="distributionSupplierName" defaultValue="" required>
+                  <option value="" disabled>Select supplier</option>
+                </select>
               </label>
               <label className="field field-full" htmlFor="detailsAddress">
                 <span>Details Address</span>
