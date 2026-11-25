@@ -8,7 +8,7 @@ const tools = [
     number: '01',
     title: 'Price Calculator',
     description: 'Matalan packaging price calculations.',
-    href: 'https://pac-d.github.io/matalanpricecalculator_mgt/',
+    href: '/pricecalculator/',
     icon: 'calculator',
   },
   {
@@ -57,7 +57,7 @@ function LockIcon() {
 }
 
 export default function App() {
-  if (window.location.pathname.replace(/\/+$/, '') === '/admin') {
+  if (window.location.pathname.replace(/\/+$/, '').startsWith('/admin')) {
     return <Admin />;
   }
 

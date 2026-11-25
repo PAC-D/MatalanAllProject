@@ -34,6 +34,15 @@ function RegistrantsIcon() {
   );
 }
 
+function CalculatorIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="5" y="2.5" width="14" height="19" rx="2" />
+      <path d="M8 6h8v4H8zM8.5 14h1m2.5 0h1m2.5 0h1m-8 3.5h1m2.5 0h1m2.5 0h1" />
+    </svg>
+  );
+}
+
 function TrashIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -51,6 +60,7 @@ function LogoutIcon() {
 }
 
 export default function Admin() {
+  const isPriceCalculator = window.location.pathname.replace(/\/+$/, '') === '/admin/pricecalculator';
   const [registrants, setRegistrants] = useState([]);
   const [loadState, setLoadState] = useState('loading');
   const [query, setQuery] = useState('');
@@ -70,8 +80,12 @@ export default function Admin() {
     || null;
 
   useEffect(() => {
-    document.title = 'Registrants | Matalan Admin';
+    document.title = isPriceCalculator ? 'Price Calculator | Matalan Admin' : 'Registrants | Matalan Admin';
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#081d36');
+    if (isPriceCalculator) {
+      setLoadState('ready');
+      return undefined;
+    }
     let isActive = true;
     fetch('/api/admin/registrations', { headers: { Accept: 'application/json' } })
       .then(async (response) => {
@@ -89,7 +103,7 @@ export default function Admin() {
         if (isActive) setLoadState('error');
       });
     return () => { isActive = false; };
-  }, []);
+  }, [isPriceCalculator]);
 
   async function handleDelete(registrant) {
     const confirmed = window.confirm(`Delete registration ${registrant.id} for ${registrant.supplierName}? This cannot be undone.`);
@@ -133,10 +147,14 @@ export default function Admin() {
 
         <nav className="admin-nav" aria-label="Admin navigation">
           <span className="admin-nav-label">PROGRAMME</span>
-          <a className="admin-nav-item is-active" href="/admin" aria-current="page">
+          <a className={`admin-nav-item ${isPriceCalculator ? '' : 'is-active'}`} href="/admin" aria-current={isPriceCalculator ? undefined : 'page'}>
             <RegistrantsIcon />
             <span>Registrants</span>
             <strong>{registrants.length}</strong>
+          </a>
+          <a className={`admin-nav-item ${isPriceCalculator ? 'is-active' : ''}`} href="/admin/pricecalculator" aria-current={isPriceCalculator ? 'page' : undefined}>
+            <CalculatorIcon />
+            <span>Price calculator</span>
           </a>
         </nav>
 
@@ -165,6 +183,28 @@ export default function Admin() {
           </div>
         </header>
 
+        <nav className="admin-mobile-nav" aria-label="Admin navigation">
+          <a className={isPriceCalculator ? '' : 'is-active'} href="/admin">Registrants</a>
+          <a className={isPriceCalculator ? 'is-active' : ''} href="/admin/pricecalculator">Price calculator</a>
+        </nav>
+
+        {isPriceCalculator ? (
+          <div className="admin-content admin-calculator-content">
+            <header className="admin-page-heading">
+              <div>
+                <span className="admin-eyebrow">COMMERCIAL TOOL</span>
+                <h1>Price calculator</h1>
+              </div>
+            </header>
+            <section className="admin-calculator-panel" aria-label="Matalan price calculator">
+              <iframe
+                className="admin-calculator-frame"
+                src="/admin/pricecalculator/app/index.html"
+                title="Matalan price calculator with commercial breakdown"
+              />
+            </section>
+          </div>
+        ) : (
         <div className="admin-content">
           <header className="admin-page-heading">
             <div>
@@ -327,6 +367,7 @@ export default function Admin() {
             )}
           </div>
         </div>
+        )}
       </section>
     </main>
   );

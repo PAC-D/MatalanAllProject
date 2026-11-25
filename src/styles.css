@@ -685,6 +685,7 @@ footer {
 .admin-nav-item span { font-size: .9rem; font-weight: 700; }
 .admin-nav-item strong { min-width: 26px; padding: 4px 7px; color: #fff; background: rgba(255,255,255,.1); font-size: .7rem; text-align: center; }
 .admin-nav-item.is-active { color: #fff; background: rgba(255,255,255,.07); border-left-color: var(--admin-red); }
+.admin-mobile-nav { display: none; }
 
 .admin-sidebar-foot {
   margin-top: auto;
@@ -783,6 +784,20 @@ footer {
 .admin-stat-primary { position: relative; }
 .admin-stat-primary::before { content: ''; width: 3px; position: absolute; inset: 0 auto 0 0; background: var(--admin-red); }
 
+.admin-calculator-panel {
+  margin-top: 32px;
+  padding: 22px;
+  background: rgba(255,255,255,.46);
+  border: 1px solid var(--admin-line);
+}
+.admin-calculator-frame {
+  width: 100%;
+  min-height: 1680px;
+  display: block;
+  background: transparent;
+  border: 0;
+}
+
 .admin-data-layout { margin-top: 30px; display: grid; grid-template-columns: minmax(0, 1fr) 310px; gap: 18px; align-items: start; }
 .admin-data-layout.is-empty { grid-template-columns: minmax(0, 1fr); }
 .admin-table-panel,
@@ -873,6 +888,25 @@ footer {
   .admin-mobile-brand img { width: 74px; }
   .admin-mobile-brand span { color: #7a8188; font-size: .68rem; font-weight: 700; letter-spacing: .14em; }
   .admin-logout-mobile { display: inline-flex; }
+  .admin-mobile-nav {
+    min-height: 48px;
+    padding: 0 20px;
+    display: flex;
+    align-items: stretch;
+    gap: 22px;
+    background: rgba(255,255,255,.48);
+    border-bottom: 1px solid var(--admin-line);
+  }
+  .admin-mobile-nav a {
+    display: flex;
+    align-items: center;
+    color: var(--admin-muted);
+    border-bottom: 2px solid transparent;
+    text-decoration: none;
+    font-size: .76rem;
+    font-weight: 700;
+  }
+  .admin-mobile-nav a.is-active { color: var(--admin-navy); border-bottom-color: var(--admin-red); }
   .admin-stats { grid-template-columns: repeat(2, 1fr); }
   .admin-stat:nth-child(2) { border-right: 0; }
   .admin-stat:nth-child(-n+2) { border-bottom: 1px solid var(--admin-line); }
@@ -883,6 +917,9 @@ footer {
   .admin-topbar-meta > span { display: none; }
   .admin-topbar-meta img { width: 94px; }
   .admin-content { padding: 34px 20px 45px; }
+  .admin-calculator-content { padding-inline: 12px; }
+  .admin-calculator-panel { margin-top: 24px; padding: 0; border: 0; background: transparent; }
+  .admin-calculator-frame { min-height: 1750px; }
   .admin-page-heading { align-items: stretch; flex-direction: column; }
   .admin-page-actions { align-items: stretch; flex-direction: column; }
   .admin-page-heading h1 { font-size: 2.55rem; }
