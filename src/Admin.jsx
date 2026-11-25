@@ -61,6 +61,7 @@ function LogoutIcon() {
 
 export default function Admin() {
   const isPriceCalculator = window.location.pathname.replace(/\/+$/, '') === '/admin/pricecalculator';
+  const [calculatorHeight, setCalculatorHeight] = useState(980);
   const [registrants, setRegistrants] = useState([]);
   const [loadState, setLoadState] = useState('loading');
   const [query, setQuery] = useState('');
@@ -103,6 +104,17 @@ export default function Admin() {
         if (isActive) setLoadState('error');
       });
     return () => { isActive = false; };
+  }, [isPriceCalculator]);
+
+  useEffect(() => {
+    if (!isPriceCalculator) return undefined;
+    function handleCalculatorResize(event) {
+      if (event.origin !== window.location.origin || event.data?.type !== 'matalan-calculator-height') return;
+      const nextHeight = Number(event.data.height);
+      if (Number.isFinite(nextHeight)) setCalculatorHeight(Math.max(760, Math.min(nextHeight, 2200)));
+    }
+    window.addEventListener('message', handleCalculatorResize);
+    return () => window.removeEventListener('message', handleCalculatorResize);
   }, [isPriceCalculator]);
 
   async function handleDelete(registrant) {
@@ -201,6 +213,7 @@ export default function Admin() {
                 className="admin-calculator-frame"
                 src="/admin/pricecalculator/app/index.html"
                 title="Matalan price calculator with commercial breakdown"
+                style={{ height: `${calculatorHeight}px` }}
               />
             </section>
           </div>

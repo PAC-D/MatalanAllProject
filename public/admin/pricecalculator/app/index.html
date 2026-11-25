@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="icon" type="image/png" href="favicon.png">
     <!-- Lucide Icons -->
@@ -486,12 +486,142 @@
         }
     </style>
     <style>
-        body.embedded { background: transparent; }
+        body.embedded {
+            --primary: #0a203b;
+            --primary-hover: #06182e;
+            --secondary: #bd1235;
+            --border: #d9d6cf;
+            --text-main: #102238;
+            --text-muted: #6f7881;
+            min-height: 0;
+            color: var(--text-main);
+            background: transparent;
+            font-family: 'DM Sans', sans-serif;
+        }
         body.embedded .bg-decoration,
         body.embedded .navbar,
         body.embedded .app-footer { display: none; }
-        body.embedded .main-container { padding: 0; }
-        body.embedded .calculator-card { margin: 0 auto; box-shadow: none; }
+        body.embedded .main-container { padding: 0; overflow: visible; }
+        body.embedded .calculator-card {
+            max-width: none;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+            background: transparent;
+            border: 0;
+            border-radius: 0;
+            box-shadow: none;
+        }
+        body.embedded .card-header {
+            grid-column: 1 / -1;
+            margin: 0 0 4px;
+            padding: 23px 26px;
+            text-align: left;
+            background: #0a203b;
+            border-left: 4px solid #bd1235;
+        }
+        body.embedded .card-header h2 {
+            margin-bottom: 4px;
+            color: #fff;
+            font: 800 1.35rem/1.2 'Manrope', sans-serif;
+            letter-spacing: -.025em;
+        }
+        body.embedded .card-header p { color: #9fb0c0; }
+        body.embedded .form-section {
+            min-width: 0;
+            margin: 0;
+            padding: 24px;
+            background: rgba(255,255,255,.58);
+            border: 1px solid #d9d6cf;
+            border-top: 3px solid #0a203b;
+        }
+        body.embedded .section-label {
+            margin-bottom: 18px;
+            color: #bd1235;
+            font-size: .68rem;
+            letter-spacing: .14em;
+        }
+        body.embedded .floating-group input,
+        body.embedded .custom-select {
+            min-height: 52px;
+            color: #102238;
+            background-color: rgba(255,255,255,.7);
+            border-color: #cbc9c3;
+            border-radius: 0;
+            box-shadow: none;
+            font-family: 'DM Sans', sans-serif;
+        }
+        body.embedded .floating-group input:focus,
+        body.embedded .custom-select:focus {
+            background-color: #fff;
+            border-color: #bd1235;
+            box-shadow: 0 0 0 3px rgba(189,18,53,.09);
+        }
+        body.embedded .primary-btn {
+            grid-column: 1 / -1;
+            height: 54px;
+            margin: 2px 0 0;
+            color: #fff;
+            background: #bd1235;
+            border-radius: 0;
+            box-shadow: none;
+            font-family: 'DM Sans', sans-serif;
+        }
+        body.embedded .primary-btn:hover { background: #9f0d2b; box-shadow: none; }
+        body.embedded > .warning-message,
+        body.embedded .calculator-card > .form-group,
+        body.embedded .warning-message,
+        body.embedded .results { grid-column: 1 / -1; }
+        body.embedded .results {
+            margin-top: 2px;
+            padding: 22px;
+            background: rgba(255,255,255,.48);
+            border-color: #d9d6cf;
+            border-radius: 0;
+        }
+        body.embedded .results.show { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        body.embedded .result-item {
+            min-width: 0;
+            border: 1px solid #dedbd5;
+            border-radius: 0;
+            box-shadow: none;
+        }
+        body.embedded .highlight-result { background: #eef2f5; border-color: #aab7c3; }
+        body.embedded #cartonUnitPriceRow,
+        body.embedded #totalPriceRow,
+        body.embedded #markingPriceRow,
+        body.embedded #rebateRow,
+        body.embedded #pacdRow,
+        body.embedded #supplierPriceRow { grid-column: span 2; }
+        body.embedded .results > .full-width:last-child { grid-column: 1 / -1; }
+        body.embedded .results .primary-btn {
+            color: #0a203b !important;
+            background: #fff !important;
+            border-color: #aab7c3 !important;
+        }
+        @media (max-width: 980px) {
+            body.embedded .calculator-card { grid-template-columns: 1fr; }
+            body.embedded .card-header,
+            body.embedded .primary-btn,
+            body.embedded .calculator-card > .form-group,
+            body.embedded .warning-message,
+            body.embedded .results { grid-column: 1; }
+            body.embedded .results.show { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (max-width: 560px) {
+            body.embedded .form-section { padding: 19px; }
+            body.embedded .input-grid { grid-template-columns: 1fr !important; }
+            body.embedded .results.show { grid-template-columns: 1fr; }
+            body.embedded #cartonUnitPriceRow,
+            body.embedded #totalPriceRow,
+            body.embedded #markingPriceRow,
+            body.embedded #rebateRow,
+            body.embedded #pacdRow,
+            body.embedded #supplierPriceRow,
+            body.embedded .results > .full-width:last-child { grid-column: 1; }
+        }
     </style>
 </head>
 
@@ -727,7 +857,15 @@
     </footer>
 
     <script>
-        if (window.self !== window.top) document.body.classList.add('embedded');
+        if (window.self !== window.top) {
+            document.body.classList.add('embedded');
+            const reportHeight = () => window.parent.postMessage({
+                type: 'matalan-calculator-height',
+                height: document.documentElement.scrollHeight
+            }, window.location.origin);
+            window.addEventListener('load', reportHeight);
+            new ResizeObserver(reportHeight).observe(document.body);
+        }
         lucide.createIcons();
 
         /* --- Matalan Logic Preserved --- */

@@ -644,6 +644,7 @@ footer {
     linear-gradient(90deg, rgba(255,255,255,.026) 1px, transparent 1px),
     var(--admin-navy-deep);
   background-size: 38px 38px;
+  view-transition-name: admin-sidebar;
 }
 
 .admin-sidebar-brand {
@@ -680,7 +681,9 @@ footer {
   color: #afbdca;
   text-decoration: none;
   border-left: 2px solid transparent;
+  transition: color .2s ease, background-color .2s ease, border-color .2s ease, transform .2s ease;
 }
+.admin-nav-item:hover { color: #fff; background: rgba(255,255,255,.045); transform: translateX(2px); }
 .admin-nav-item svg { width: 21px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .admin-nav-item span { font-size: .9rem; font-weight: 700; }
 .admin-nav-item strong { min-width: 26px; padding: 4px 7px; color: #fff; background: rgba(255,255,255,.1); font-size: .7rem; text-align: center; }
@@ -732,7 +735,11 @@ footer {
 .admin-topbar-meta img { width: 112px; height: auto; }
 .admin-mobile-brand { display: none; }
 
-.admin-content { padding: 46px clamp(26px, 3.5vw, 58px) 64px; }
+.admin-content {
+  padding: 46px clamp(26px, 3.5vw, 58px) 64px;
+  animation: admin-tab-enter .38s cubic-bezier(.2,.72,.2,1) both;
+  view-transition-name: admin-panel;
+}
 .admin-page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 30px; }
 .admin-eyebrow { display: block; margin-bottom: 11px; color: var(--admin-red); }
 .admin-page-heading h1 { margin: 0; color: var(--admin-navy); font: 800 clamp(2.35rem, 4vw, 3.8rem)/1 'Manrope', sans-serif; letter-spacing: -.05em; }
@@ -792,11 +799,25 @@ footer {
 }
 .admin-calculator-frame {
   width: 100%;
-  min-height: 1680px;
+  min-height: 760px;
   display: block;
   background: transparent;
   border: 0;
+  transition: height .3s ease;
 }
+
+@keyframes admin-tab-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@view-transition { navigation: auto; }
+::view-transition-old(root),
+::view-transition-new(root) { animation: none; }
+::view-transition-old(admin-panel) { animation: .16s ease both admin-tab-old; }
+::view-transition-new(admin-panel) { animation: .32s cubic-bezier(.2,.72,.2,1) both admin-tab-new; }
+@keyframes admin-tab-old { to { opacity: 0; transform: translateX(-10px); } }
+@keyframes admin-tab-new { from { opacity: 0; transform: translateX(14px); } }
 
 .admin-data-layout { margin-top: 30px; display: grid; grid-template-columns: minmax(0, 1fr) 310px; gap: 18px; align-items: start; }
 .admin-data-layout.is-empty { grid-template-columns: minmax(0, 1fr); }
@@ -919,7 +940,7 @@ footer {
   .admin-content { padding: 34px 20px 45px; }
   .admin-calculator-content { padding-inline: 12px; }
   .admin-calculator-panel { margin-top: 24px; padding: 0; border: 0; background: transparent; }
-  .admin-calculator-frame { min-height: 1750px; }
+  .admin-calculator-frame { min-height: 900px; }
   .admin-page-heading { align-items: stretch; flex-direction: column; }
   .admin-page-actions { align-items: stretch; flex-direction: column; }
   .admin-page-heading h1 { font-size: 2.55rem; }
@@ -1138,4 +1159,5 @@ body:has(.portal-page),
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  ::view-transition-old(admin-panel), ::view-transition-new(admin-panel) { animation: none; }
 }
