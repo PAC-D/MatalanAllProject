@@ -156,7 +156,13 @@ function cleanEmail(value, label) {
   return email;
 }
 
-function validateProgramUsers(users, label) {
+function cleanPersonName(value, label) {
+  const name = cleanText(value, label, 200);
+  if (name.split(/\s+/).length < 2) throw new Error(`${label} must contain at least two words.`);
+  return name;
+}
+
+function validateProgramUsers(users, label, supplierName) {
   if (!Array.isArray(users) || users.length < 1 || users.length > 20) {
     throw new Error(`Between 1 and 20 ${label} users are required.`);
   }
@@ -165,12 +171,13 @@ function validateProgramUsers(users, label) {
     const organization = cleanText(user?.organization, `${label} User ${index + 1} Organisation`, 300);
     const organizationPair = cleanText(user?.organizationPair, `${label} User ${index + 1} Organisation Pair`, 700);
     const catalogPair = registrationPairs.find((pair) => (
-      organizationPair === `${pair.supplier} / ${pair.factory}`
+      pair.supplier === supplierName
+      && organizationPair === `${pair.supplier} / ${pair.factory}`
       && (organization === pair.supplier || organization === pair.factory)
     ));
     if (!catalogPair) throw new Error(`${label} User ${index + 1} Organisation must be selected from the supplier/factory list.`);
     return {
-      name: cleanText(user?.name, `${label} User ${index + 1} Name`, 200),
+      name: cleanPersonName(user?.name, `${label} User ${index + 1} Name`),
       organization,
       organizationPair,
       designation: cleanText(user?.designation, `${label} User ${index + 1} Designation`, 200),
@@ -203,7 +210,7 @@ function validateRegistration(payload) {
     return {
       name: catalogFactory.factory,
       country: catalogFactory.factoryCountry,
-      champion: cleanText(factory?.champion, `Factory ${index + 1} Champion`, 200),
+      champion: cleanPersonName(factory?.champion, `Factory ${index + 1} Champion`),
       designation: cleanText(factory?.designation, `Factory ${index + 1} Champion Designation`, 200),
       email: cleanEmail(factory?.email, `Factory ${index + 1} Champion Email`),
     };
@@ -212,18 +219,18 @@ function validateRegistration(payload) {
   return {
     country,
     supplierName,
-    supplierChampion: cleanText(payload.supplierChampion, 'Supplier Champion', 200),
+    supplierChampion: cleanPersonName(payload.supplierChampion, 'Supplier Champion'),
     supplierChampionDesignation: cleanText(payload.supplierChampionDesignation, 'Supplier Champion Designation', 200),
     supplierChampionEmail: cleanEmail(payload.supplierChampionEmail, 'Supplier Champion Email'),
     factories,
     jigsQuantity,
-    distributionSupplierName: cleanText(payload.distributionSupplierName, 'Distribution Supplier Name', 300),
+    distributionSupplierName: supplierName,
     detailsAddress: cleanText(payload.detailsAddress, 'Delivery Address', 1000),
-    attentionName: cleanText(payload.attentionName, 'Attention Name', 200),
+    attentionName: cleanPersonName(payload.attentionName, 'Attention Name'),
     contactPhone: cleanText(payload.contactPhone, 'Phone', 100),
     contactEmail: cleanEmail(payload.contactEmail, 'Contact Email'),
-    assignees: validateProgramUsers(payload.assignees, 'LMS'),
-    tpsUsers: validateProgramUsers(payload.tpsUsers, 'TPS'),
+    assignees: validateProgramUsers(payload.assignees, 'LMS', supplierName),
+    tpsUsers: validateProgramUsers(payload.tpsUsers, 'TPS', supplierName),
   };
 }
 

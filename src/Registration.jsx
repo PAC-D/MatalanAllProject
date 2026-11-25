@@ -8,6 +8,8 @@ import {
   registrationCountries,
 } from './data/registrationOptions';
 
+const personNamePattern = String.raw`\S+\s+\S+.*`;
+
 function SuggestionField({ id, label, options, value, onChange, placeholder, allowCustom = true }) {
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
@@ -118,9 +120,9 @@ function SuggestionField({ id, label, options, value, onChange, placeholder, all
   );
 }
 
-function OrganizationField({ id, name, value, pair, onChange }) {
+function OrganizationField({ id, name, value, pair, supplierName, onChange }) {
   const [isOpen, setIsOpen] = useState(false);
-  const suggestions = getOrganizationSuggestions(value);
+  const suggestions = getOrganizationSuggestions(value, supplierName);
 
   function chooseSuggestion(suggestion) {
     onChange(suggestion.value, suggestion.pair);
@@ -238,7 +240,7 @@ function SectionHeading({ id, number, title }) {
   );
 }
 
-function ProgrammeUsers({ prefix, users, onAdd, onRemove, onOrganizationChange }) {
+function ProgrammeUsers({ prefix, users, supplierName, onAdd, onRemove, onOrganizationChange }) {
   return (
     <div className="programme-users">
       {users.map((user, index) => (
@@ -252,13 +254,14 @@ function ProgrammeUsers({ prefix, users, onAdd, onRemove, onOrganizationChange }
           <div className="form-grid form-grid-4">
             <label className="field" htmlFor={`${prefix}UserName-${user.id}`}>
               <span>Person Name</span>
-              <input id={`${prefix}UserName-${user.id}`} name={`${prefix}Users[${index}].name`} type="text" placeholder="Enter full name" required />
+              <input id={`${prefix}UserName-${user.id}`} name={`${prefix}Users[${index}].name`} type="text" placeholder="Enter first and last name" pattern={personNamePattern} title="Enter at least two words separated by a space." required />
             </label>
             <OrganizationField
               id={`${prefix}Organization-${user.id}`}
               name={`${prefix}Users[${index}].organization`}
               value={user.organization}
               pair={user.organizationPair}
+              supplierName={supplierName}
               onChange={(value, pair) => onOrganizationChange(user.id, value, pair)}
             />
             <label className="field" htmlFor={`${prefix}Designation-${user.id}`}>
@@ -378,8 +381,8 @@ export default function Registration() {
 
   const steps = [
     { number: 1, label: 'Packaging Champion' },
-    { number: 2, label: 'LMS User' },
-    { number: 3, label: 'TPS' },
+    { number: 2, label: 'LMS User Info' },
+    { number: 3, label: 'TPS User Info' },
     { number: 4, label: 'Measuring Jigs Delivery' },
   ];
 
@@ -398,6 +401,13 @@ export default function Registration() {
     setUsers((users) => users.map((user) => (
       user.id === userId ? { ...user, organization, organizationPair } : user
     )));
+  }
+
+  function handleSupplierChange(nextSupplier) {
+    setSupplierName(nextSupplier);
+    setDistributionSupplierName(nextSupplier);
+    setLmsUsers((users) => users.map((user) => ({ ...user, organization: '', organizationPair: '' })));
+    setTpsUsers((users) => users.map((user) => ({ ...user, organization: '', organizationPair: '' })));
   }
 
   return (
@@ -461,7 +471,7 @@ export default function Registration() {
                 label="Supplier Name"
                 options={supplierNames}
                 value={supplierName}
-                onChange={setSupplierName}
+                onChange={handleSupplierChange}
                 placeholder="Type supplier name"
                 allowCustom={false}
               />
@@ -474,7 +484,7 @@ export default function Registration() {
             <div className="form-grid form-grid-3">
               <label className="field" htmlFor="supplierChampion">
                 <span>Person Name</span>
-                <input id="supplierChampion" name="supplierChampion" type="text" placeholder="Enter full name" required />
+                <input id="supplierChampion" name="supplierChampion" type="text" placeholder="Enter first and last name" pattern={personNamePattern} title="Enter at least two words separated by a space." required />
               </label>
               <label className="field" htmlFor="supplierChampionDesignation">
                 <span>Designation</span>
@@ -503,7 +513,7 @@ export default function Registration() {
                     </div>
                     <label className="field" htmlFor={`factoryChampion-${index}`}>
                       <span>Person Name</span>
-                      <input id={`factoryChampion-${index}`} name={`factories[${index}].champion`} type="text" placeholder="Enter full name" required />
+                      <input id={`factoryChampion-${index}`} name={`factories[${index}].champion`} type="text" placeholder="Enter first and last name" pattern={personNamePattern} title="Enter at least two words separated by a space." required />
                     </label>
                     <label className="field" htmlFor={`factoryChampionDesignation-${index}`}>
                       <span>Designation</span>
@@ -520,7 +530,7 @@ export default function Registration() {
 
             <div className="form-actions form-actions-step">
               <span />
-              <button type="button" onClick={goToNextStep}>Next: LMS User</button>
+              <button type="button" onClick={goToNextStep}>Next: LMS User Info</button>
             </div>
           </section>
 
@@ -530,20 +540,25 @@ export default function Registration() {
             aria-labelledby="part-two-title"
             hidden={activeStep !== 2}
           >
-            <SectionHeading id="part-two-title" number="02" title="LMS User" />
+            <SectionHeading id="part-two-title" number="02" title="LMS User Info" />
             <p className="registration-disclaimer">
               Online Learning Management System where resources related to the programme and a few courses need to be completed to obtain a completion certificate.
             </p>
+            <div className="selected-organization-scope">
+              <strong>{supplierName}</strong>
+              <div>{factories.map((factory) => <span key={factory.name}>{factory.name}</span>)}</div>
+            </div>
             <ProgrammeUsers
               prefix="lms"
               users={lmsUsers}
+              supplierName={supplierName}
               onAdd={() => addUser(setLmsUsers)}
               onRemove={(userId) => removeUser(setLmsUsers, userId)}
               onOrganizationChange={(userId, value, pair) => updateUserOrganization(setLmsUsers, userId, value, pair)}
             />
             <div className="form-actions form-actions-step">
               <button className="form-back-button" type="button" onClick={() => setActiveStep(1)}>Back</button>
-              <button type="button" onClick={goToNextStep}>Next: TPS</button>
+              <button type="button" onClick={goToNextStep}>Next: TPS User Info</button>
             </div>
           </section>
 
@@ -553,13 +568,18 @@ export default function Registration() {
             aria-labelledby="part-three-title"
             hidden={activeStep !== 3}
           >
-            <SectionHeading id="part-three-title" number="03" title="TPS (Transit Packaging System)" />
+            <SectionHeading id="part-three-title" number="03" title="TPS User Info (Transit Packaging System)" />
             <p className="registration-disclaimer">
               Online carton dimensions, supporting photos and packaging supplier declaration platform user details.
             </p>
+            <div className="selected-organization-scope">
+              <strong>{supplierName}</strong>
+              <div>{factories.map((factory) => <span key={factory.name}>{factory.name}</span>)}</div>
+            </div>
             <ProgrammeUsers
               prefix="tps"
               users={tpsUsers}
+              supplierName={supplierName}
               onAdd={() => addUser(setTpsUsers)}
               onRemove={(userId) => removeUser(setTpsUsers, userId)}
               onOrganizationChange={(userId, value, pair) => updateUserOrganization(setTpsUsers, userId, value, pair)}
@@ -577,27 +597,26 @@ export default function Registration() {
             hidden={activeStep !== 4}
           >
             <SectionHeading id="part-four-title" number="04" title="Measuring Jigs Delivery" />
+            <div className="selected-organization-scope selected-organization-scope-jigs">
+              <strong>{supplierName}</strong>
+              <div>{factories.map((factory) => <span key={factory.name}>{factory.name}</span>)}</div>
+            </div>
             <div className="form-grid">
               <label className="field" htmlFor="jigsQuantity">
                 <span>Jigs Quantity</span>
                 <input id="jigsQuantity" name="jigsQuantity" type="number" min="1" placeholder="0" required />
               </label>
-              <SuggestionField
-                id="distributionSupplierName"
-                label="Supplier Name"
-                options={supplierNames}
-                value={distributionSupplierName}
-                onChange={setDistributionSupplierName}
-                placeholder="Type supplier name"
-                allowCustom={false}
-              />
+              <label className="field" htmlFor="distributionSupplierName">
+                <span>Supplier Name</span>
+                <input id="distributionSupplierName" name="distributionSupplierName" type="text" value={distributionSupplierName} readOnly required />
+              </label>
               <label className="field field-full" htmlFor="detailsAddress">
                 <span>Details Address</span>
                 <textarea id="detailsAddress" name="detailsAddress" rows="3" placeholder="Enter delivery address" required />
               </label>
               <label className="field field-full" htmlFor="attentionName">
                 <span>Attention Name</span>
-                <input id="attentionName" name="attentionName" type="text" placeholder="Enter attention name" required />
+                <input id="attentionName" name="attentionName" type="text" placeholder="Enter first and last name" pattern={personNamePattern} title="Enter at least two words separated by a space." required />
               </label>
               <label className="field" htmlFor="contactPhone">
                 <span>Phone</span>

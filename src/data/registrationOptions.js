@@ -681,11 +681,13 @@ function matchScore(value, query) {
   return Number.POSITIVE_INFINITY;
 }
 
-export function getOrganizationSuggestions(value) {
+export function getOrganizationSuggestions(value, supplier) {
   const query = value.trim().toLocaleLowerCase();
-  if (!query) return [];
+  const normalizedSupplier = supplier.trim().toLocaleLowerCase();
+  if (!query || !normalizedSupplier) return [];
 
   return registrationPairs
+    .filter((pair) => pair.supplier.toLocaleLowerCase() === normalizedSupplier)
     .map((pair) => {
       const supplierScore = matchScore(pair.supplier, query);
       const factoryScore = matchScore(pair.factory, query);
