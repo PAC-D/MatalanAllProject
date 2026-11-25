@@ -29,58 +29,109 @@ function worksheet(name, headers, rows) {
 export function downloadRegistrantsExcel(registrants) {
   if (!registrants.length) return;
 
-  const maximumAssignees = Math.max(...registrants.map((registrant) => registrant.assignees?.length || 0));
-  const assigneeDetailHeaders = Array.from({ length: maximumAssignees }, (_, index) => [
-    `Assignee ${index + 1} Name`,
-    `Assignee ${index + 1} Designation`,
-    `Assignee ${index + 1} Email`,
+  const maximumFactories = Math.max(...registrants.map((registrant) => registrant.factories?.length || 0));
+  const maximumLmsUsers = Math.max(...registrants.map((registrant) => registrant.assignees?.length || 0));
+  const maximumTpsUsers = Math.max(...registrants.map((registrant) => registrant.tpsUsers?.length || 0));
+  const factoryDetailHeaders = Array.from({ length: maximumFactories }, (_, index) => [
+    `Factory ${index + 1} Name`,
+    `Factory ${index + 1} Country`,
+    `Factory ${index + 1} Champion Name`,
+    `Factory ${index + 1} Champion Designation`,
+    `Factory ${index + 1} Champion Email`,
+  ]).flat();
+  const userDetailHeaders = (prefix, count) => Array.from({ length: count }, (_, index) => [
+    `${prefix} ${index + 1} Person Name`,
+    `${prefix} ${index + 1} Organisation`,
+    `${prefix} ${index + 1} Supplier / Factory Pair`,
+    `${prefix} ${index + 1} Designation`,
+    `${prefix} ${index + 1} Email`,
   ]).flat();
   const registrationHeaders = [
-    'Registration ID', 'Country', 'Supplier Name', 'Supplier End Packaging Champion',
-    'Factory Name', 'Factory End Packaging Champion', 'Jigs Quantity',
+    'Registration ID', 'Supplier Country', 'Supplier Name', 'Supplier Champion Name',
+    'Supplier Champion Designation', 'Supplier Champion Email', 'Factory Count',
+    ...factoryDetailHeaders,
+    'LMS User Count', ...userDetailHeaders('LMS User', maximumLmsUsers),
+    'TPS User Count', ...userDetailHeaders('TPS User', maximumTpsUsers),
+    'Jigs Quantity',
     'Distribution Supplier Name', 'Delivery Address', 'Attention Name', 'Phone',
-    'Email', 'LMS Assignee Count', ...assigneeDetailHeaders, 'Submitted At', 'Status',
+    'Email', 'Submitted At', 'Status',
   ];
-  const registrationRows = registrants.map((registrant) => {
-    const assigneeDetails = Array.from({ length: maximumAssignees }, (_, index) => {
-      const assignee = registrant.assignees?.[index];
-      return [assignee?.name || '', assignee?.designation || '', assignee?.email || ''];
-    }).flat();
-
+  const expandFactories = (factories) => Array.from({ length: maximumFactories }, (_, index) => {
+    const factory = factories?.[index];
     return [
-      registrant.id,
-      registrant.country,
-      registrant.supplierName,
-      registrant.supplierChampion,
-      registrant.factoryName,
-      registrant.factoryChampion,
-      Number(registrant.jigsQuantity || 0),
-      registrant.distributionSupplierName,
-      registrant.detailsAddress,
-      registrant.attentionName,
-      registrant.contactPhone,
-      registrant.contactEmail,
-      registrant.assignees?.length || 0,
-      ...assigneeDetails,
-      registrant.submittedAt,
-      registrant.status,
+      factory?.name || '',
+      factory?.country || '',
+      factory?.champion || '',
+      factory?.designation || '',
+      factory?.email || '',
     ];
-  });
+  }).flat();
+  const expandUsers = (users, maximumUsers) => Array.from({ length: maximumUsers }, (_, index) => {
+    const user = users?.[index];
+    return [
+      user?.name || '',
+      user?.organization || '',
+      user?.organizationPair || '',
+      user?.designation || '',
+      user?.email || '',
+    ];
+  }).flat();
+  const registrationRows = registrants.map((registrant) => [
+    registrant.id,
+    registrant.country,
+    registrant.supplierName,
+    registrant.supplierChampion,
+    registrant.supplierChampionDesignation,
+    registrant.supplierChampionEmail,
+    registrant.factories?.length || 0,
+    ...expandFactories(registrant.factories),
+    registrant.assignees?.length || 0,
+    ...expandUsers(registrant.assignees, maximumLmsUsers),
+    registrant.tpsUsers?.length || 0,
+    ...expandUsers(registrant.tpsUsers, maximumTpsUsers),
+    Number(registrant.jigsQuantity || 0),
+    registrant.distributionSupplierName,
+    registrant.detailsAddress,
+    registrant.attentionName,
+    registrant.contactPhone,
+    registrant.contactEmail,
+    registrant.submittedAt,
+    registrant.status,
+  ]);
 
-  const assigneeHeaders = [
-    'Registration ID', 'Country', 'Supplier Name', 'Factory Name', 'Assignee Number',
-    'Assignee Name', 'Designation', 'Email Address',
+  const factoryHeaders = [
+    'Registration ID', 'Supplier Country', 'Supplier Name', 'Factory Number',
+    'Factory Name', 'Factory Country', 'Champion Name', 'Designation', 'Email Address',
   ];
-  const assigneeRows = registrants.flatMap((registrant) => (
-    (registrant.assignees || []).map((assignee, index) => [
+  const factoryRows = registrants.flatMap((registrant) => (
+    (registrant.factories || []).map((factory, index) => [
       registrant.id,
       registrant.country,
       registrant.supplierName,
-      registrant.factoryName,
       index + 1,
-      assignee.name,
-      assignee.designation,
-      assignee.email,
+      factory.name,
+      factory.country,
+      factory.champion,
+      factory.designation,
+      factory.email,
+    ])
+  ));
+
+  const userHeaders = [
+    'Registration ID', 'Supplier Country', 'Supplier Name', 'User Number',
+    'Person Name', 'Organisation', 'Supplier / Factory Pair', 'Designation', 'Email Address',
+  ];
+  const userRows = (key) => registrants.flatMap((registrant) => (
+    (registrant[key] || []).map((user, index) => [
+      registrant.id,
+      registrant.country,
+      registrant.supplierName,
+      index + 1,
+      user.name,
+      user.organization,
+      user.organizationPair,
+      user.designation,
+      user.email,
     ])
   ));
 
@@ -92,7 +143,9 @@ export function downloadRegistrantsExcel(registrants) {
         <Style ss:ID="Default" ss:Name="Normal"><Alignment ss:Vertical="Bottom"/></Style>
       </Styles>
       ${worksheet('Registrations', registrationHeaders, registrationRows)}
-      ${worksheet('LMS Assignees', assigneeHeaders, assigneeRows)}
+      ${worksheet('Factory Champions', factoryHeaders, factoryRows)}
+      ${worksheet('LMS Users', userHeaders, userRows('assignees'))}
+      ${worksheet('TPS Users', userHeaders, userRows('tpsUsers'))}
     </Workbook>`;
 
   const blob = new Blob([workbook], { type: 'application/vnd.ms-excel;charset=utf-8' });

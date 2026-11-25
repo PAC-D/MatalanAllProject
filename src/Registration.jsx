@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import matalanLogo from '../assets/matalan logo.png';
 import pacdLogo from '../assets/pacd-logo.png';
-import { getNamesForCountry, registrationCountries } from './data/registrationOptions';
+import {
+  getFactoriesForSupplier,
+  getOrganizationSuggestions,
+  getSuppliersForCountry,
+  registrationCountries,
+} from './data/registrationOptions';
 
 function SuggestionField({ id, label, options, value, onChange, placeholder, allowCustom = true }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -50,7 +55,10 @@ function SuggestionField({ id, label, options, value, onChange, placeholder, all
             setHighlightedIndex(-1);
           }}
           onFocus={() => setIsOpen(true)}
-          onBlur={() => window.setTimeout(() => setIsOpen(false), 100)}
+          onBlur={() => window.setTimeout(() => {
+            setIsOpen(false);
+            if (!allowCustom && value && !exactMatch) onChange('');
+          }, 100)}
           onKeyDown={(event) => {
             if (event.key === 'Escape') {
               setIsOpen(false);
@@ -106,6 +114,64 @@ function SuggestionField({ id, label, options, value, onChange, placeholder, all
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function OrganizationField({ id, name, value, pair, onChange }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const suggestions = getOrganizationSuggestions(value);
+
+  function chooseSuggestion(suggestion) {
+    onChange(suggestion.value, suggestion.pair);
+    setIsOpen(false);
+  }
+
+  return (
+    <div className="field suggestion-field">
+      <label htmlFor={id}>Organisation</label>
+      <div className="suggestion-control">
+        <input
+          id={id}
+          type="text"
+          value={value}
+          placeholder="Type supplier or factory name"
+          autoComplete="off"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded={isOpen && suggestions.length > 0}
+          onChange={(event) => {
+            onChange(event.target.value, '');
+            setIsOpen(true);
+          }}
+          onFocus={() => setIsOpen(true)}
+          onBlur={() => window.setTimeout(() => {
+            setIsOpen(false);
+            if (!pair) onChange('', '');
+          }, 100)}
+          required
+        />
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5.5 7.5 4.5 4.5 4.5-4.5" /></svg>
+        {isOpen && suggestions.length > 0 && (
+          <div className="suggestion-menu organization-suggestions" role="listbox">
+            {suggestions.map((suggestion) => (
+              <button
+                type="button"
+                role="option"
+                key={`${suggestion.pair}-${suggestion.value}`}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => chooseSuggestion(suggestion)}
+              >
+                <strong>{suggestion.label}</strong>
+                <small>Store: {suggestion.value}</small>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      <input type="hidden" name={name} value={value} />
+      <input type="hidden" name={`${name}Pair`} value={pair} />
+      {pair && <small className="organization-pair">Pair: {pair}</small>}
     </div>
   );
 }
@@ -172,18 +238,56 @@ function SectionHeading({ id, number, title }) {
   );
 }
 
+function ProgrammeUsers({ prefix, users, onAdd, onRemove, onOrganizationChange }) {
+  return (
+    <div className="programme-users">
+      {users.map((user, index) => (
+        <fieldset className="programme-user" key={user.id}>
+          <legend>USER {String(index + 1).padStart(2, '0')}</legend>
+          {users.length > 1 && (
+            <button className="programme-user-remove" type="button" onClick={() => onRemove(user.id)}>
+              Remove
+            </button>
+          )}
+          <div className="form-grid form-grid-4">
+            <label className="field" htmlFor={`${prefix}UserName-${user.id}`}>
+              <span>Person Name</span>
+              <input id={`${prefix}UserName-${user.id}`} name={`${prefix}Users[${index}].name`} type="text" placeholder="Enter full name" required />
+            </label>
+            <OrganizationField
+              id={`${prefix}Organization-${user.id}`}
+              name={`${prefix}Users[${index}].organization`}
+              value={user.organization}
+              pair={user.organizationPair}
+              onChange={(value, pair) => onOrganizationChange(user.id, value, pair)}
+            />
+            <label className="field" htmlFor={`${prefix}Designation-${user.id}`}>
+              <span>Designation</span>
+              <input id={`${prefix}Designation-${user.id}`} name={`${prefix}Users[${index}].designation`} type="text" placeholder="Enter job title" required />
+            </label>
+            <label className="field" htmlFor={`${prefix}Email-${user.id}`}>
+              <span>Email</span>
+              <input id={`${prefix}Email-${user.id}`} name={`${prefix}Users[${index}].email`} type="email" placeholder="name@company.com" required />
+            </label>
+          </div>
+        </fieldset>
+      ))}
+      <button className="programme-user-add" type="button" onClick={onAdd}>+ Add more person</button>
+    </div>
+  );
+}
+
 export default function Registration() {
-  const [assigneeCount, setAssigneeCount] = useState(1);
+  const [activeStep, setActiveStep] = useState(1);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [lmsUsers, setLmsUsers] = useState([{ id: 0, organization: '', organizationPair: '' }]);
+  const [tpsUsers, setTpsUsers] = useState([{ id: 0, organization: '', organizationPair: '' }]);
   const [submission, setSubmission] = useState({ state: 'idle', message: '' });
   const [country, setCountry] = useState('');
   const [supplierName, setSupplierName] = useState('');
-  const [factoryName, setFactoryName] = useState('');
   const [distributionSupplierName, setDistributionSupplierName] = useState('');
-  const countryNames = useMemo(() => getNamesForCountry(country), [country]);
-  const assignees = useMemo(
-    () => Array.from({ length: Math.min(Math.max(Number(assigneeCount) || 0, 0), 20) }),
-    [assigneeCount],
-  );
+  const supplierNames = useMemo(() => getSuppliersForCountry(country), [country]);
+  const factories = useMemo(() => getFactoriesForSupplier(supplierName), [supplierName]);
 
   useEffect(() => {
     document.title = 'Supplier Registration | Matalan';
@@ -198,18 +302,34 @@ export default function Registration() {
       country,
       supplierName,
       supplierChampion: formData.get('supplierChampion'),
-      factoryName,
-      factoryChampion: formData.get('factoryChampion'),
+      supplierChampionDesignation: formData.get('supplierChampionDesignation'),
+      supplierChampionEmail: formData.get('supplierChampionEmail'),
+      factories: factories.map((factory, index) => ({
+        name: factory.name,
+        country: factory.country,
+        champion: formData.get(`factories[${index}].champion`),
+        designation: formData.get(`factories[${index}].designation`),
+        email: formData.get(`factories[${index}].email`),
+      })),
       jigsQuantity: Number(formData.get('jigsQuantity')),
       distributionSupplierName,
       detailsAddress: formData.get('detailsAddress'),
       attentionName: formData.get('attentionName'),
       contactPhone: formData.get('contactPhone'),
       contactEmail: formData.get('contactEmail'),
-      assignees: assignees.map((_, index) => ({
-        name: formData.get(`assignees[${index}].name`),
-        designation: formData.get(`assignees[${index}].designation`),
-        email: formData.get(`assignees[${index}].email`),
+      assignees: lmsUsers.map((_, index) => ({
+        name: formData.get(`lmsUsers[${index}].name`),
+        organization: formData.get(`lmsUsers[${index}].organization`),
+        organizationPair: formData.get(`lmsUsers[${index}].organizationPair`),
+        designation: formData.get(`lmsUsers[${index}].designation`),
+        email: formData.get(`lmsUsers[${index}].email`),
+      })),
+      tpsUsers: tpsUsers.map((_, index) => ({
+        name: formData.get(`tpsUsers[${index}].name`),
+        organization: formData.get(`tpsUsers[${index}].organization`),
+        organizationPair: formData.get(`tpsUsers[${index}].organizationPair`),
+        designation: formData.get(`tpsUsers[${index}].designation`),
+        email: formData.get(`tpsUsers[${index}].email`),
       })),
     };
 
@@ -226,10 +346,13 @@ export default function Registration() {
       form.reset();
       setCountry('');
       setSupplierName('');
-      setFactoryName('');
       setDistributionSupplierName('');
-      setAssigneeCount(1);
+      setActiveStep(1);
+      setLmsUsers([{ id: 0, organization: '', organizationPair: '' }]);
+      setTpsUsers([{ id: 0, organization: '', organizationPair: '' }]);
       setSubmission({ state: 'success', message: `Registration ${result.id} submitted.` });
+      setShowSuccess(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       setSubmission({ state: 'error', message: error.message || 'Registration could not be submitted.' });
     }
@@ -238,8 +361,43 @@ export default function Registration() {
   function handleCountryChange(nextCountry) {
     setCountry(nextCountry);
     setSupplierName('');
-    setFactoryName('');
     setDistributionSupplierName('');
+  }
+
+  function goToNextStep() {
+    const currentSection = document.getElementById(`registration-step-${activeStep}`);
+    const currentFields = [...currentSection.querySelectorAll('input, select, textarea')];
+    const invalidField = currentFields.find((field) => !field.checkValidity());
+    if (invalidField) {
+      invalidField.reportValidity();
+      return;
+    }
+    setActiveStep((step) => Math.min(step + 1, 4));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  const steps = [
+    { number: 1, label: 'Packaging Champion' },
+    { number: 2, label: 'LMS User' },
+    { number: 3, label: 'TPS' },
+    { number: 4, label: 'Measuring Jigs Delivery' },
+  ];
+
+  function addUser(setUsers) {
+    setUsers((users) => {
+      if (users.length >= 20) return users;
+      return [...users, { id: Math.max(...users.map((user) => user.id)) + 1, organization: '', organizationPair: '' }];
+    });
+  }
+
+  function removeUser(setUsers, userId) {
+    setUsers((users) => users.filter((user) => user.id !== userId));
+  }
+
+  function updateUserOrganization(setUsers, userId, organization, organizationPair) {
+    setUsers((users) => users.map((user) => (
+      user.id === userId ? { ...user, organization, organizationPair } : user
+    )));
   }
 
   return (
@@ -264,50 +422,161 @@ export default function Registration() {
           <img src={matalanLogo} alt="Matalan" />
         </header>
 
-        <form className="registration-form" aria-label="Registration" onSubmit={handleSubmit}>
-          <section className="form-section" aria-labelledby="part-one-title">
-            <SectionHeading id="part-one-title" number="01" title="Packaging Champions" />
+        <form className="registration-form registration-wizard" aria-label="Registration" onSubmit={handleSubmit}>
+          <nav className="registration-steps" aria-label="Registration progress">
+            {steps.map((step) => (
+              <button
+                className={`${activeStep === step.number ? 'is-active' : ''} ${activeStep > step.number ? 'is-complete' : ''}`}
+                type="button"
+                key={step.number}
+                disabled={step.number > activeStep}
+                aria-current={activeStep === step.number ? 'step' : undefined}
+                onClick={() => setActiveStep(step.number)}
+              >
+                <span>{String(step.number).padStart(2, '0')}</span>
+                <strong>{step.label}</strong>
+              </button>
+            ))}
+          </nav>
+
+          <section
+            className="form-section registration-step"
+            id="registration-step-1"
+            aria-labelledby="part-one-title"
+            hidden={activeStep !== 1}
+          >
+            <SectionHeading id="part-one-title" number="01" title="Packaging Champion" />
             <div className="form-grid">
-              <div className="field-full">
-                <SuggestionField
-                  id="country"
-                  label="Country"
-                  options={registrationCountries}
-                  value={country}
-                  onChange={handleCountryChange}
-                  placeholder="Type country name"
-                  allowCustom={false}
-                />
-              </div>
+              <SuggestionField
+                id="country"
+                label="Country"
+                options={registrationCountries}
+                value={country}
+                onChange={handleCountryChange}
+                placeholder="Type country name"
+                allowCustom={false}
+              />
               <SuggestionField
                 id="supplierName"
                 label="Supplier Name"
-                options={countryNames}
+                options={supplierNames}
                 value={supplierName}
                 onChange={setSupplierName}
                 placeholder="Type supplier name"
+                allowCustom={false}
               />
+            </div>
+
+            <div className="registration-row-heading">
+              <span>Supplier Champion</span>
+              <small>Primary packaging programme contact</small>
+            </div>
+            <div className="form-grid form-grid-3">
               <label className="field" htmlFor="supplierChampion">
-                <span>Supplier End Packaging Champion</span>
-                <input id="supplierChampion" name="supplierChampion" type="text" placeholder="Enter champion name" required />
+                <span>Person Name</span>
+                <input id="supplierChampion" name="supplierChampion" type="text" placeholder="Enter full name" required />
               </label>
-              <SuggestionField
-                id="factoryName"
-                label="Factory Name"
-                options={countryNames}
-                value={factoryName}
-                onChange={setFactoryName}
-                placeholder="Type factory name"
-              />
-              <label className="field" htmlFor="factoryChampion">
-                <span>Factory End Packaging Champion</span>
-                <input id="factoryChampion" name="factoryChampion" type="text" placeholder="Enter champion name" required />
+              <label className="field" htmlFor="supplierChampionDesignation">
+                <span>Designation</span>
+                <input id="supplierChampionDesignation" name="supplierChampionDesignation" type="text" placeholder="Enter job title" required />
               </label>
+              <label className="field" htmlFor="supplierChampionEmail">
+                <span>Email</span>
+                <input id="supplierChampionEmail" name="supplierChampionEmail" type="email" placeholder="name@company.com" required />
+              </label>
+            </div>
+
+            <div className="registration-row-heading">
+              <span>Factory Champion</span>
+              <small>Factory-level packaging programme contact</small>
+            </div>
+            {factories.length === 0 ? (
+              <p className="factory-empty">Choose a supplier to load its factory list.</p>
+            ) : (
+              <div className="factory-champion-list">
+                {factories.map((factory, index) => (
+                  <fieldset className="factory-champion-row" key={`${factory.name}-${factory.country}`}>
+                    <legend>FACTORY {String(index + 1).padStart(2, '0')}</legend>
+                    <div className="factory-identity">
+                      <strong>{factory.name}</strong>
+                      <span>{factory.country}</span>
+                    </div>
+                    <label className="field" htmlFor={`factoryChampion-${index}`}>
+                      <span>Person Name</span>
+                      <input id={`factoryChampion-${index}`} name={`factories[${index}].champion`} type="text" placeholder="Enter full name" required />
+                    </label>
+                    <label className="field" htmlFor={`factoryChampionDesignation-${index}`}>
+                      <span>Designation</span>
+                      <input id={`factoryChampionDesignation-${index}`} name={`factories[${index}].designation`} type="text" placeholder="Enter job title" required />
+                    </label>
+                    <label className="field" htmlFor={`factoryChampionEmail-${index}`}>
+                      <span>Email</span>
+                      <input id={`factoryChampionEmail-${index}`} name={`factories[${index}].email`} type="email" placeholder="name@company.com" required />
+                    </label>
+                  </fieldset>
+                ))}
+              </div>
+            )}
+
+            <div className="form-actions form-actions-step">
+              <span />
+              <button type="button" onClick={goToNextStep}>Next: LMS User</button>
             </div>
           </section>
 
-          <section className="form-section" aria-labelledby="part-two-title">
-            <SectionHeading id="part-two-title" number="02" title="Measuring Jigs Distribution Details" />
+          <section
+            className="form-section registration-step"
+            id="registration-step-2"
+            aria-labelledby="part-two-title"
+            hidden={activeStep !== 2}
+          >
+            <SectionHeading id="part-two-title" number="02" title="LMS User" />
+            <p className="registration-disclaimer">
+              Online Learning Management System where resources related to the programme and a few courses need to be completed to obtain a completion certificate.
+            </p>
+            <ProgrammeUsers
+              prefix="lms"
+              users={lmsUsers}
+              onAdd={() => addUser(setLmsUsers)}
+              onRemove={(userId) => removeUser(setLmsUsers, userId)}
+              onOrganizationChange={(userId, value, pair) => updateUserOrganization(setLmsUsers, userId, value, pair)}
+            />
+            <div className="form-actions form-actions-step">
+              <button className="form-back-button" type="button" onClick={() => setActiveStep(1)}>Back</button>
+              <button type="button" onClick={goToNextStep}>Next: TPS</button>
+            </div>
+          </section>
+
+          <section
+            className="form-section registration-step"
+            id="registration-step-3"
+            aria-labelledby="part-three-title"
+            hidden={activeStep !== 3}
+          >
+            <SectionHeading id="part-three-title" number="03" title="TPS (Transit Packaging System)" />
+            <p className="registration-disclaimer">
+              Online carton dimensions, supporting photos and packaging supplier declaration platform user details.
+            </p>
+            <ProgrammeUsers
+              prefix="tps"
+              users={tpsUsers}
+              onAdd={() => addUser(setTpsUsers)}
+              onRemove={(userId) => removeUser(setTpsUsers, userId)}
+              onOrganizationChange={(userId, value, pair) => updateUserOrganization(setTpsUsers, userId, value, pair)}
+            />
+            <div className="form-actions form-actions-step">
+              <button className="form-back-button" type="button" onClick={() => setActiveStep(2)}>Back</button>
+              <button type="button" onClick={goToNextStep}>Next: Measuring Jigs</button>
+            </div>
+          </section>
+
+          <section
+            className="form-section registration-step"
+            id="registration-step-4"
+            aria-labelledby="part-four-title"
+            hidden={activeStep !== 4}
+          >
+            <SectionHeading id="part-four-title" number="04" title="Measuring Jigs Delivery" />
             <div className="form-grid">
               <label className="field" htmlFor="jigsQuantity">
                 <span>Jigs Quantity</span>
@@ -316,10 +585,11 @@ export default function Registration() {
               <SuggestionField
                 id="distributionSupplierName"
                 label="Supplier Name"
-                options={countryNames}
+                options={supplierNames}
                 value={distributionSupplierName}
                 onChange={setDistributionSupplierName}
                 placeholder="Type supplier name"
+                allowCustom={false}
               />
               <label className="field field-full" htmlFor="detailsAddress">
                 <span>Details Address</span>
@@ -338,57 +608,40 @@ export default function Registration() {
                 <input id="contactEmail" name="contactEmail" type="email" placeholder="name@company.com" required />
               </label>
             </div>
-          </section>
-
-          <section className="form-section" aria-labelledby="part-three-title">
-            <SectionHeading id="part-three-title" number="03" title="LMS Training Details" />
-            <div className="form-grid">
-              <label className="field field-count" htmlFor="assigneeCount">
-                <span>How many people to assign?</span>
-                <input
-                  id="assigneeCount"
-                  name="assigneeCount"
-                  type="number"
-                  min="1"
-                  max="20"
-                  value={assigneeCount}
-                  onChange={(event) => setAssigneeCount(event.target.value)}
-                  required
-                />
-              </label>
-            </div>
-
-            <div className="assignee-list">
-              {assignees.map((_, index) => (
-                <fieldset className="assignee-row" key={index}>
-                  <legend>ASSIGNEE {String(index + 1).padStart(2, '0')}</legend>
-                  <label className="field" htmlFor={`assigneeName-${index}`}>
-                    <span>Name</span>
-                    <input id={`assigneeName-${index}`} name={`assignees[${index}].name`} type="text" placeholder="Full name" required />
-                  </label>
-                  <label className="field" htmlFor={`designation-${index}`}>
-                    <span>Designation</span>
-                    <input id={`designation-${index}`} name={`assignees[${index}].designation`} type="text" placeholder="Job title" required />
-                  </label>
-                  <label className="field" htmlFor={`assigneeEmail-${index}`}>
-                    <span>Email Address</span>
-                    <input id={`assigneeEmail-${index}`} name={`assignees[${index}].email`} type="email" placeholder="name@company.com" required />
-                  </label>
-                </fieldset>
-              ))}
+            <div className="form-actions">
+              <button className="form-back-button" type="button" onClick={() => setActiveStep(3)}>Back</button>
+              <span className={`demo-message ${submission.state !== 'idle' ? 'is-visible' : ''} ${submission.state === 'error' ? 'is-error' : ''}`} role="status">
+                {submission.message}
+              </span>
+              <button type="submit" disabled={submission.state === 'submitting'}>
+                {submission.state === 'submitting' ? 'Submitting...' : 'Submit registration'}
+              </button>
             </div>
           </section>
-
-          <div className="form-actions">
-            <span className={`demo-message ${submission.state !== 'idle' ? 'is-visible' : ''} ${submission.state === 'error' ? 'is-error' : ''}`} role="status">
-              {submission.message}
-            </span>
-            <button type="submit" disabled={submission.state === 'submitting'}>
-              {submission.state === 'submitting' ? 'Submitting...' : 'Submit registration'}
-            </button>
-          </div>
         </form>
       </section>
+
+      {showSuccess && (
+        <div className="registration-success-backdrop" role="presentation">
+          <section className="registration-success-modal" role="dialog" aria-modal="true" aria-labelledby="registration-success-title">
+            <div className="registration-success-mark" aria-hidden="true">
+              <svg viewBox="0 0 48 48"><path d="m13 25 7 7 15-17" /></svg>
+            </div>
+            <span>REGISTRATION COMPLETE</span>
+            <h2 id="registration-success-title">Successfully submitted</h2>
+            <p>{submission.message}</p>
+            <button
+              type="button"
+              onClick={() => {
+                setShowSuccess(false);
+                setSubmission({ state: 'idle', message: '' });
+              }}
+            >
+              Start another registration
+            </button>
+          </section>
+        </div>
+      )}
     </main>
   );
 }

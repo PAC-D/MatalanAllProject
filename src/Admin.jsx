@@ -71,7 +71,7 @@ export default function Admin() {
     const term = query.trim().toLowerCase();
     if (!term) return registrants;
     return registrants.filter((registrant) => (
-      `${registrant.supplierName} ${registrant.factoryName} ${registrant.country} ${registrant.contactEmail} ${registrant.id}`
+      `${registrant.supplierName} ${registrant.country} ${registrant.contactEmail} ${registrant.id} ${(registrant.factories || []).map((factory) => `${factory.name} ${factory.country} ${factory.champion}`).join(' ')} ${(registrant.assignees || []).map((user) => `${user.name} ${user.organization} ${user.organizationPair}`).join(' ')} ${(registrant.tpsUsers || []).map((user) => `${user.name} ${user.organization} ${user.organizationPair}`).join(' ')}`
         .toLowerCase()
         .includes(term)
     ));
@@ -257,8 +257,16 @@ export default function Admin() {
               <strong>{registrants.reduce((total, item) => total + Number(item.jigsQuantity || 0), 0)}</strong>
             </div>
             <div className="admin-stat">
-              <span>LMS ASSIGNEES</span>
+              <span>FACTORIES</span>
+              <strong>{registrants.reduce((total, item) => total + (item.factories?.length || 0), 0)}</strong>
+            </div>
+            <div className="admin-stat">
+              <span>LMS USERS</span>
               <strong>{registrants.reduce((total, item) => total + (item.assignees?.length || 0), 0)}</strong>
+            </div>
+            <div className="admin-stat">
+              <span>TPS USERS</span>
+              <strong>{registrants.reduce((total, item) => total + (item.tpsUsers?.length || 0), 0)}</strong>
             </div>
             <div className="admin-stat">
               <span>COUNTRIES</span>
@@ -284,6 +292,7 @@ export default function Admin() {
                       <th>Country</th>
                       <th>Jigs</th>
                       <th>LMS</th>
+                      <th>TPS</th>
                       <th>Submitted</th>
                       <th>Status</th>
                     </tr>
@@ -301,10 +310,16 @@ export default function Admin() {
                             <small>{registrant.id}</small>
                           </span>
                         </td>
-                        <td>{registrant.factoryName}</td>
+                        <td>
+                          <span className="admin-company-cell">
+                            <strong>{registrant.factories?.[0]?.name || registrant.factoryName}</strong>
+                            <small>{registrant.factories?.length || 1} factor{(registrant.factories?.length || 1) === 1 ? 'y' : 'ies'}</small>
+                          </span>
+                        </td>
                         <td>{registrant.country}</td>
                         <td>{String(registrant.jigsQuantity).padStart(2, '0')}</td>
                         <td>{String(registrant.assignees?.length || 0).padStart(2, '0')}</td>
+                        <td>{String(registrant.tpsUsers?.length || 0).padStart(2, '0')}</td>
                         <td>{formatDate(registrant.submittedAt)}</td>
                         <td><span className={`admin-status is-${registrant.status.toLowerCase()}`}>{registrant.status}</span></td>
                       </tr>
@@ -346,9 +361,7 @@ export default function Admin() {
                 </div>
                 <dl className="admin-detail-list">
                   <div><dt>Supplier</dt><dd>{selectedRegistrant.supplierName}</dd></div>
-                  <div><dt>Supplier champion</dt><dd>{selectedRegistrant.supplierChampion}</dd></div>
-                  <div><dt>Factory</dt><dd>{selectedRegistrant.factoryName}</dd></div>
-                  <div><dt>Factory champion</dt><dd>{selectedRegistrant.factoryChampion}</dd></div>
+                  <div><dt>Supplier champion</dt><dd>{selectedRegistrant.supplierChampion}<br />{selectedRegistrant.supplierChampionDesignation}<br />{selectedRegistrant.supplierChampionEmail}</dd></div>
                   <div><dt>Distribution supplier</dt><dd>{selectedRegistrant.distributionSupplierName}</dd></div>
                   <div><dt>Attention</dt><dd>{selectedRegistrant.attentionName}</dd></div>
                   <div><dt>Contact</dt><dd>{selectedRegistrant.contactPhone}<br />{selectedRegistrant.contactEmail}</dd></div>
@@ -356,8 +369,28 @@ export default function Admin() {
                   <div className="admin-detail-quantity">
                     <span><dt>Jigs</dt><dd>{selectedRegistrant.jigsQuantity}</dd></span>
                     <span><dt>LMS</dt><dd>{selectedRegistrant.assignees?.length || 0}</dd></span>
+                    <span><dt>TPS</dt><dd>{selectedRegistrant.tpsUsers?.length || 0}</dd></span>
                   </div>
                 </dl>
+                <div className="admin-assignees admin-factories">
+                  <div className="admin-assignees-heading">
+                    <h3>Factory champions</h3>
+                    <span>{selectedRegistrant.factories?.length || 0}</span>
+                  </div>
+                  <div className="admin-assignee-list">
+                    {(selectedRegistrant.factories || []).map((factory, index) => (
+                      <div className="admin-assignee" key={`${factory.name}-${index}`}>
+                        <span>{String(index + 1).padStart(2, '0')}</span>
+                        <div>
+                          <strong>{factory.name}</strong>
+                          <small>{factory.country}</small>
+                          <small>{factory.champion} · {factory.designation}</small>
+                          {factory.email && <a href={`mailto:${factory.email}`}>{factory.email}</a>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
                 <div className="admin-assignees">
                   <div className="admin-assignees-heading">
                     <h3>LMS assignees</h3>
@@ -369,8 +402,30 @@ export default function Admin() {
                         <span>{String(index + 1).padStart(2, '0')}</span>
                         <div>
                           <strong>{assignee.name}</strong>
+                          <small>{assignee.organization}</small>
+                          <small>{assignee.organizationPair}</small>
                           <small>{assignee.designation}</small>
                           <a href={`mailto:${assignee.email}`}>{assignee.email}</a>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="admin-assignees">
+                  <div className="admin-assignees-heading">
+                    <h3>TPS users</h3>
+                    <span>{selectedRegistrant.tpsUsers?.length || 0}</span>
+                  </div>
+                  <div className="admin-assignee-list">
+                    {(selectedRegistrant.tpsUsers || []).map((user, index) => (
+                      <div className="admin-assignee" key={`${user.email}-${index}`}>
+                        <span>{String(index + 1).padStart(2, '0')}</span>
+                        <div>
+                          <strong>{user.name}</strong>
+                          <small>{user.organization}</small>
+                          <small>{user.organizationPair}</small>
+                          <small>{user.designation}</small>
+                          <a href={`mailto:${user.email}`}>{user.email}</a>
                         </div>
                       </div>
                     ))}
