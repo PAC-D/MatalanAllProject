@@ -57,11 +57,13 @@ function LockIcon() {
 }
 
 export default function App() {
-  if (window.location.pathname.replace(/\/+$/, '').startsWith('/admin')) {
+  const pathname = window.location.pathname.replace(/\/+$/, '');
+
+  if (pathname.startsWith('/admin')) {
     return <Admin />;
   }
 
-  if (window.location.pathname.replace(/\/+$/, '') === '/registration') {
+  if (pathname === '/registration' || pathname === '/mtpp-registration') {
     return <Registration />;
   }
 
