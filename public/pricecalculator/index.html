@@ -489,6 +489,208 @@
             text-decoration: underline;
         }
     </style>
+    <style>
+        /* Public calculator — shared Matalan programme design language */
+        body {
+            --primary: #0a203b;
+            --primary-hover: #06182e;
+            --secondary: #bd1235;
+            --border: #d9d6cf;
+            --text-main: #102238;
+            --text-muted: #6f7881;
+            background: #f4f1eb;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .bg-decoration {
+            background-image:
+                linear-gradient(rgba(10, 32, 59, .025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(10, 32, 59, .025) 1px, transparent 1px);
+            background-size: 48px 48px;
+        }
+
+        .navbar {
+            height: 88px;
+            padding: 0 clamp(24px, 4.2vw, 64px);
+            background: rgba(243, 240, 233, .84);
+            border-color: #d9d6cf;
+            box-shadow: none;
+            backdrop-filter: blur(18px);
+        }
+
+        .tool-pacd {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .tool-pacd .logo-img {
+            width: 86px;
+            height: auto !important;
+        }
+
+        .tool-header-right { display: flex; align-items: center; gap: 25px; }
+        .tool-matalan { width: 112px; height: auto; object-fit: contain; }
+
+        .main-container {
+            align-items: flex-start;
+            padding: clamp(28px, 4vw, 58px) clamp(18px, 4vw, 72px) 72px;
+        }
+
+        .calculator-card {
+            max-width: 1480px;
+            margin: 0 auto;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+            background: transparent;
+            border: 0;
+            border-radius: 0;
+            box-shadow: none;
+        }
+
+        .card-header {
+            grid-column: 1 / -1;
+            margin: 0 0 6px;
+            padding: clamp(24px, 3vw, 38px);
+            text-align: left;
+            background: #0a203b;
+            border-left: 5px solid #bd1235;
+        }
+
+        .card-header::before {
+            content: 'COMMERCIAL TOOL';
+            display: block;
+            margin-bottom: 10px;
+            color: #ef8da0;
+            font-size: .67rem;
+            font-weight: 800;
+            letter-spacing: .17em;
+        }
+
+        .card-header h2 {
+            margin-bottom: 5px;
+            color: #fff;
+            font-size: clamp(1.55rem, 2.5vw, 2.15rem);
+            font-weight: 800;
+            letter-spacing: -.035em;
+        }
+
+        .card-header p { color: #aebdca; }
+
+        .form-section {
+            min-width: 0;
+            margin: 0;
+            padding: clamp(20px, 2.4vw, 30px);
+            background: rgba(255, 255, 255, .64);
+            border: 1px solid #d9d6cf;
+            border-top: 3px solid #0a203b;
+        }
+
+        .section-label {
+            margin-bottom: 18px;
+            color: #bd1235;
+            font-size: .68rem;
+            letter-spacing: .14em;
+        }
+
+        .floating-group input,
+        .custom-select {
+            min-height: 52px;
+            color: #102238;
+            background-color: rgba(255, 255, 255, .78);
+            border-color: #cbc9c3;
+            border-radius: 0;
+            box-shadow: none;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .floating-group input:focus,
+        .custom-select:focus {
+            background-color: #fff;
+            border-color: #bd1235;
+            box-shadow: 0 0 0 3px rgba(189, 18, 53, .09);
+        }
+
+        .calculator-card > .primary-btn {
+            grid-column: 1 / -1;
+            height: 56px;
+            margin: 2px 0 0;
+            background: #bd1235;
+            border-radius: 0;
+            box-shadow: none;
+        }
+
+        .calculator-card > .primary-btn:hover {
+            background: #9f0d2b;
+            box-shadow: none;
+        }
+
+        .calculator-card > .form-group,
+        .warning-message,
+        .results { grid-column: 1 / -1; }
+
+        .results {
+            margin-top: 2px;
+            padding: 22px;
+            background: rgba(255, 255, 255, .52);
+            border-color: #d9d6cf;
+            border-radius: 0;
+        }
+
+        .results.show { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+        .result-item {
+            min-width: 0;
+            border: 1px solid #dedbd5;
+            border-radius: 0;
+            box-shadow: none;
+        }
+
+        .highlight-result {
+            background: #eef2f5;
+            border-color: #aab7c3;
+        }
+
+        #cartonUnitPriceRow,
+        #totalPriceRow,
+        #markingPriceRow { grid-column: span 2; }
+
+        .results > .full-width:last-child { grid-column: 1 / -1; }
+
+        .results .primary-btn {
+            color: #0a203b !important;
+            background: #fff !important;
+            border-color: #aab7c3 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+        }
+
+        @media (max-width: 980px) {
+            .calculator-card { grid-template-columns: 1fr; }
+            .card-header,
+            .calculator-card > .primary-btn,
+            .calculator-card > .form-group,
+            .warning-message,
+            .results { grid-column: 1; }
+            .results.show { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        @media (max-width: 560px) {
+            .navbar { height: 76px; padding-inline: 20px; }
+            .tool-pacd .logo-img { width: 72px; }
+            .tool-header-right { gap: 14px; }
+            .tool-matalan { width: 88px; }
+            .main-container { padding: 20px 12px 44px; }
+            .form-section { padding: 19px; }
+            .input-grid { grid-template-columns: 1fr !important; }
+            .results.show { grid-template-columns: 1fr; }
+            #cartonUnitPriceRow,
+            #totalPriceRow,
+            #markingPriceRow,
+            .results > .full-width:last-child { grid-column: 1; }
+        }
+    </style>
 </head>
 
 <body>
@@ -497,11 +699,11 @@
 
     <!-- Navigation Bar -->
     <nav class="navbar">
-        <div class="logo-section">
-            <img src="pacd.png" alt="PACD Logo" class="logo-img">
-        </div>
-        <div class="logo-section">
-            <img src="matalan.png" alt="Matalan Logo" class="logo-img">
+        <a class="tool-pacd" href="/" aria-label="PAC-D tools home">
+            <img src="/brand-assets/pacd-logo.png" alt="PACD Logo" class="logo-img">
+        </a>
+        <div class="tool-header-right">
+            <img src="/brand-assets/matalan-logo.png" alt="Matalan Logo" class="tool-matalan">
         </div>
     </nav>
 
@@ -626,7 +828,7 @@
                             Cartons will be delivered with standard printing. You need to print the label through a
                             separate label generator at your own / or from a nominated packaging supplier for
                             $0.06/pic.<br><br>
-                            <a href="https://pac-d.github.io/Matalan-Label-Generator-v2/" target="_blank"
+                            <a href="/label-generator/" target="_blank"
                                 style="color: var(--primary); font-weight: 600; text-decoration: underline;">Open Label
                                 Generator</a>
                         </div>

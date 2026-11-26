@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import matalanLogo from '../assets/matalan logo.png';
-import pacdLogo from '../assets/pacd-logo.png';
 import { downloadRegistrantsExcel } from './utils/exportRegistrantsExcel';
+
+const matalanLogo = '/brand-assets/matalan-logo.png';
+const pacdLogo = '/brand-assets/pacd-logo.png';
 
 function formatDate(value) {
   if (!value) return '';

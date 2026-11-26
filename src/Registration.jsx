@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
-import matalanLogo from '../assets/matalan logo.png';
-import pacdLogo from '../assets/pacd-logo.png';
 import {
   getFactoriesForSupplier,
   getOrganizationSuggestions,
   getSuppliersForCountry,
   registrationCountries,
 } from './data/registrationOptions';
+
+const matalanLogo = '/brand-assets/matalan-logo.png';
+const pacdLogo = '/brand-assets/pacd-logo.png';
 
 const personNamePattern = String.raw`\S+\s+\S+.*`;
 
@@ -281,7 +282,6 @@ function ProgrammeUsers({ prefix, users, supplierName, onAdd, onRemove, onOrgani
 }
 
 export default function Registration() {
-  const apiBasePath = import.meta.env.BASE_URL === '/' ? '' : import.meta.env.BASE_URL.replace(/\/$/, '');
   const [activeStep, setActiveStep] = useState(1);
   const [showSuccess, setShowSuccess] = useState(false);
   const [lmsUsers, setLmsUsers] = useState([{ id: 0, organization: '', organizationPair: '' }]);
@@ -339,7 +339,7 @@ export default function Registration() {
 
     setSubmission({ state: 'submitting', message: 'Submitting registration...' });
     try {
-      const response = await fetch(`${apiBasePath}/api/registrations`, {
+      const response = await fetch('/api/registrations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

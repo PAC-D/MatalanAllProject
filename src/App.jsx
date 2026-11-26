@@ -1,7 +1,8 @@
-import matalanLogo from '../assets/matalan logo.png';
-import pacdLogo from '../assets/pacd-logo.png';
 import Admin from './Admin';
 import Registration, { PackageScene } from './Registration';
+
+const matalanLogo = '/brand-assets/matalan-logo.png';
+const pacdLogo = '/brand-assets/pacd-logo.png';
 
 const tools = [
   {
@@ -15,7 +16,7 @@ const tools = [
     number: '02',
     title: 'Label Generator',
     description: 'Product label creation and output.',
-    href: 'https://pac-d.github.io/Matalan-Label-Generator-v2/',
+    href: '/label-generator/',
     icon: 'label',
   },
 ];
@@ -59,11 +60,19 @@ function LockIcon() {
 export default function App() {
   const pathname = window.location.pathname.replace(/\/+$/, '');
 
+  // Vite's development server falls back to this React app for directory URLs.
+  // Send those clean routes to their static entry files; production nginx serves
+  // the same files directly before this fallback is reached.
+  if (pathname === '/pricecalculator' || pathname === '/label-generator') {
+    window.location.replace(`${pathname}/index.html`);
+    return null;
+  }
+
   if (pathname.startsWith('/admin')) {
     return <Admin />;
   }
 
-  if (pathname === '/registration' || pathname === '/mtpp-registration') {
+  if (pathname === '/registration') {
     return <Registration />;
   }
 

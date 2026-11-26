@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matalan Shipping Label Generator - Official Instruction Manual</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --primary: #00205b;
+            --secondary: #e31837;
+            --bg-light: #f8fafc;
+            --bg-white: #ffffff;
+            --border: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #e2e8f0;
+            color: var(--text-main);
+            line-height: 1.4;
+            /* Reduced from 1.6 */
+            padding: 2rem;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        /* Export Button */
+        .export-btn-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+        }
+
+        .export-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 99px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 15px rgba(0, 32, 91, 0.3);
+            transition: all 0.3s;
+        }
+
+        .export-btn:hover {
+            background: #001540;
+            transform: translateY(-2px);
+        }
+
+        .export-btn:disabled {
+            opacity: 0.7;
+            cursor: wait;
+        }
+
+        /* Print Styles */
+        @media print {
+            @page {
+                size: A4;
+                margin: 0;
+            }
+
+            body {
+                background: white !important;
+                padding: 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            .export-btn-container {
+                display: none !important;
+            }
+
+            .a4-page {
+                box-shadow: none !important;
+                margin: 0 !important;
+                page-break-after: always;
+                page-break-inside: avoid;
+            }
+
+            .a4-page:last-child {
+                page-break-after: avoid;
+            }
+
+            .manual-header {
+                background: var(--primary) !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            .section-number,
+            .step-number,
+            .size-option-label {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+
+        /* A4 Page Styling - 210mm x 297mm */
+        .a4-page {
+            width: 210mm;
+            height: 297mm;
+            background: white;
+            margin: 0 auto 2rem auto;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
+            padding: 10mm 15mm;
+            /* Reduced padding */
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Header Section */
+        .manual-header {
+            background: var(--primary);
+            color: white;
+            padding: 1rem 1.5rem;
+            /* Reduced padding */
+            margin: -10mm -15mm 1rem -15mm;
+            /* Adjusted margins */
+            position: relative;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-text h1 {
+            font-size: 1.2rem;
+            /* Reduced font size */
+            font-weight: 800;
+            margin-bottom: 0;
+        }
+
+        .header-text p {
+            font-size: 0.75rem;
+            /* Reduced font size */
+            color: #ffffff;
+            opacity: 1;
+        }
+
+        .header-logo img {
+            height: 32px;
+            /* Reduced logo size */
+        }
+
+        /* Section Styling */
+        .section {
+            margin-bottom: 0.8rem;
+            /* Reduced margin */
+        }
+
+        .section-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            /* Reduced size */
+            height: 20px;
+            /* Reduced size */
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 0.65rem;
+            /* Reduced font size */
+            margin-right: 0.4rem;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            /* Reduced font size */
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            /* Reduced margin */
+            padding-bottom: 0.2rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        h3 {
+            font-size: 0.8rem;
+            /* Reduced font size */
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.3rem;
+            margin-top: 0.5rem;
+        }
+
+        p {
+            margin-bottom: 0.3rem;
+            /* Reduced margin */
+            color: var(--text-main);
+            font-size: 0.75rem;
+            /* Reduced font size */
+        }
+
+        ul {
+            margin-left: 1.1rem;
+            margin-bottom: 0.3rem;
+        }
+
+        li {
+            margin-bottom: 0.2rem;
+            font-size: 0.7rem;
+            /* Reduced font size */
+        }
+
+        li strong {
+            color: var(--primary);
+        }
+
+        .highlight {
+            background: #fef3c7;
+            padding: 0.1rem 0.3rem;
+            border-radius: 3px;
+            font-weight: 600;
+            color: #92400e;
+        }
+
+        .info-box {
+            background: #eff6ff;
+            border-left: 3px solid var(--primary);
+            padding: 0.4rem 0.6rem;
+            /* Reduced padding */
+            border-radius: 0 4px 4px 0;
+            margin: 0.5rem 0;
+            /* Reduced margin */
+        }
+
+        .info-box p {
+            color: var(--primary);
+            margin-bottom: 0;
+            font-size: 0.7rem;
+            /* Reduced font size */
+        }
+
+        .important-box {
+            background: #fef3c7;
+            border-left: 3px solid #f59e0b;
+            padding: 0.4rem 0.6rem;
+            /* Reduced padding */
+            border-radius: 0 4px 4px 0;
+            margin: 0.5rem 0;
+            /* Reduced margin */
+        }
+
+        .important-box .box-title {
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 0.1rem;
+            font-size: 0.7rem;
+            /* Reduced font size */
+        }
+
+        .important-box p {
+            color: #78350f;
+            margin-bottom: 0;
+            font-size: 0.7rem;
+            /* Reduced font size */
+        }
+
+        .size-decision-box {
+            background: var(--bg-light);
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            padding: 0.6rem;
+            /* Reduced padding */
+            margin: 0.6rem 0;
+            /* Reduced margin */
+        }
+
+        .size-decision-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .size-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.6rem;
+            /* Reduced gap */
+        }
+
+        .size-option {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            padding: 0.5rem;
+            /* Reduced padding */
+            text-align: center;
+        }
+
+        .size-option.custom {
+            border-color: var(--secondary);
+        }
+
+        .size-option.a5 {
+            border-color: var(--primary);
+        }
+
+        .size-option-label {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            /* Reduced padding */
+            border-radius: 99px;
+            font-weight: 700;
+            font-size: 0.7rem;
+            /* Reduced font size */
+            margin-bottom: 0.3rem;
+        }
+
+        .size-option.custom .size-option-label {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .size-option.a5 .size-option-label {
+            background: var(--primary);
+            color: white;
+        }
+
+        .size-option-dimension {
+            font-size: 0.9rem;
+            /* Reduced font size */
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 0.1rem;
+        }
+
+        .size-option-condition {
+            font-size: 0.65rem;
+            /* Reduced font size */
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .size-option-condition strong {
+            color: var(--text-main);
+        }
+
+        .instructions-image-container {
+            margin: 0.5rem 0;
+            /* Reduced margin */
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+            background: var(--bg-light);
+        }
+
+        .instructions-image {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .step {
+            display: flex;
+            gap: 0.5rem;
+            /* Reduced gap */
+            margin-bottom: 0.5rem;
+            /* Reduced margin */
+            padding: 0.5rem;
+            /* Reduced padding */
+            background: var(--bg-light);
+            border-radius: 4px;
+            border-left: 3px solid var(--primary);
+        }
+
+        .step-number {
+            flex-shrink: 0;
+            width: 22px;
+            /* Reduced size */
+            height: 22px;
+            /* Reduced size */
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.65rem;
+            /* Reduced font size */
+        }
+
+        .step-content h4 {
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.1rem;
+            font-size: 0.75rem;
+            /* Reduced font size */
+        }
+
+        .step-content p {
+            color: var(--text-muted);
+            margin-bottom: 0;
+            font-size: 0.65rem;
+            /* Reduced font size */
+        }
+
+        .specs-list {
+            background: var(--bg-light);
+            border-radius: 6px;
+            padding: 0.5rem 0.75rem;
+            /* Reduced padding */
+            margin: 0.4rem 0;
+            /* Reduced margin */
+        }
+
+        .specs-list li {
+            margin-bottom: 0.15rem;
+            /* Reduced margin */
+            font-size: 0.7rem;
+            /* Reduced font size */
+        }
+
+        .page-footer {
+            position: absolute;
+            bottom: 8mm;
+            /* Reduced bottom position */
+            left: 15mm;
+            /* Adjusted left position */
+            right: 15mm;
+            /* Adjusted right position */
+            padding-top: 0.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .footer-logo {
+            height: 20px;
+            /* Reduced logo size */
+        }
+
+        .footer-text {
+            color: var(--text-muted);
+            font-size: 0.6rem;
+            /* Reduced font size */
+            text-align: right;
+        }
+
+        .page-number {
+            color: var(--text-muted);
+            font-size: 0.65rem;
+            /* Reduced font size */
+            font-weight: 600;
+        }
+
+        /* Matalan programme manual shell */
+        body {
+            padding: 120px 2rem 2rem;
+            background: #f3f0e9;
+            color: #102238;
+        }
+
+        .manual-toolbar {
+            position: fixed;
+            inset: 0 0 auto;
+            z-index: 1000;
+            width: 100%;
+            height: 88px;
+            padding: 0 clamp(24px, 4.2vw, 64px);
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 24px;
+            background: rgba(243, 240, 233, .92);
+            border-bottom: 1px solid #d9d6cf;
+            backdrop-filter: blur(18px);
+        }
+
+        .manual-back {
+            width: max-content;
+            min-height: 44px;
+            padding: 0 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            color: #0a203b;
+            background: rgba(255,255,255,.43);
+            border: 1px solid rgba(10,32,59,.16);
+            box-shadow: inset 0 1px rgba(255,255,255,.8), 0 8px 25px rgba(10,32,59,.07);
+            text-decoration: none;
+            font-size: .78rem;
+            font-weight: 700;
+            transition: border-color .2s ease, background-color .2s ease, transform .2s ease;
+        }
+
+        .manual-back:hover {
+            background: rgba(255,255,255,.78);
+            border-color: rgba(189,18,53,.42);
+            transform: translateY(-1px);
+        }
+
+        .manual-back > span:first-child {
+            color: #bd1235;
+            font-size: 1.1rem;
+        }
+
+        .manual-toolbar-title { text-align: center; }
+
+        .manual-toolbar-title span {
+            display: block;
+            margin-bottom: 3px;
+            color: #bd1235;
+            font-size: .59rem;
+            font-weight: 800;
+            letter-spacing: .16em;
+        }
+
+        .manual-toolbar-title strong {
+            color: #0a203b;
+            font-size: .95rem;
+            letter-spacing: -.015em;
+        }
+
+        .export-btn {
+            justify-self: end;
+            min-height: 46px;
+            padding: 0 19px;
+            color: #fff;
+            background: #bd1235;
+            border-radius: 0;
+            box-shadow: none;
+            font-size: .78rem;
+            font-weight: 800;
+            letter-spacing: .01em;
+        }
+
+        .export-btn:hover {
+            background: #9f0d2b;
+            transform: translateY(-1px);
+        }
+
+        .export-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .export-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: manual-spin .7s linear infinite;
+        }
+
+        @keyframes manual-spin { to { transform: rotate(360deg); } }
+
+        .a4-page {
+            margin-bottom: 28px;
+            border: 1px solid #d9d6cf;
+            box-shadow: 0 20px 60px rgba(10,32,59,.12);
+        }
+
+        .manual-header {
+            background: #0a203b;
+            border-left: 5px solid #bd1235;
+        }
+
+        .section-title {
+            color: #0a203b;
+            border-color: #d9d6cf;
+        }
+
+        .section-number,
+        .step-number {
+            background: #0a203b;
+            border-radius: 0;
+        }
+
+        .info-box {
+            background: #f3f0e9;
+            border-color: #0a203b;
+            border-radius: 0;
+        }
+
+        .important-box { border-radius: 0; }
+
+        @media (max-width: 860px) {
+            body { padding: 96px 12px 20px; overflow-x: auto; }
+            .manual-toolbar {
+                height: 76px;
+                padding-inline: 16px;
+                grid-template-columns: auto 1fr auto;
+                gap: 10px;
+            }
+            .manual-toolbar-title { text-align: left; }
+            .manual-toolbar-title span { display: none; }
+            .manual-toolbar-title strong { font-size: .78rem; }
+            .manual-back { width: 40px; min-height: 40px; padding: 0; justify-content: center; }
+            .manual-back span:last-child { display: none; }
+            .export-btn { min-height: 40px; padding: 0 12px; }
+        }
+
+        @media (max-width: 520px) {
+            .manual-toolbar-title { display: none; }
+            .manual-toolbar { grid-template-columns: auto 1fr; }
+            .export-btn { grid-column: 2; }
+        }
+
+        @media print {
+            body { padding: 0 !important; background: #fff !important; }
+            .manual-toolbar { display: none !important; }
+            .a4-page { border: 0 !important; box-shadow: none !important; margin: 0 !important; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="export-btn-container manual-toolbar" id="exportBtnContainer">
+        <a class="manual-back" href="./" aria-label="Back to label generator">
+            <span aria-hidden="true">←</span>
+            <span>Label Generator</span>
+        </a>
+        <div class="manual-toolbar-title">
+            <span>MATALAN / USER GUIDE</span>
+            <strong>Shipping Label Instructions</strong>
+        </div>
+        <button class="export-btn" id="exportBtn" onclick="exportPDF()">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 3v12m0 0 4-4m-4 4-4-4M5 17v3h14v-3" />
+            </svg>
+            <span>Export PDF</span>
+        </button>
+    </div>
+
+    <!-- PAGE 1 -->
+    <div class="a4-page" id="page1">
+        <header class="manual-header">
+            <div class="header-content">
+                <div class="header-text">
+                    <h1>Matalan Shipping Label Generator</h1>
+                    <p>Official Instruction Manual</p>
+                </div>
+                <div class="header-logo">
+                    <img src="/brand-assets/pacd-logo.png" alt="PAC-D Logo"
+                        style="background: white; padding: 5px; border-radius: 4px; height: 60px;">
+                </div>
+            </div>
+        </header>
+
+        <section class="section">
+            <h2 class="section-title">
+                <span class="section-number">1</span>
+                Label Size Selection
+            </h2>
+            <p>Select the correct label size based on the <strong>carton height</strong>:</p>
+
+            <div class="size-decision-box">
+                <div class="size-options">
+                    <div class="size-option a5">
+                        <span class="size-option-label">A5 Standard</span>
+                        <div class="size-option-dimension">Height &gt; 15 cm</div>
+                        <img src="assets/A5.png" alt="A5 Label Example"
+                            style="width: 100%; border: 1px solid #e2e8f0; margin-top: 10px; border-radius: 4px;">
+                        <p class="size-option-condition" style="margin-top: 5px;">Standard layout for most cartons.</p>
+                    </div>
+                    <div class="size-option custom">
+                        <span class="size-option-label">Custom Wide</span>
+                        <div class="size-option-dimension">Height 10-15 cm</div>
+                        <img src="assets/CUSTOM.png" alt="Custom Label Example"
+                            style="width: 100%; border: 1px solid #e2e8f0; margin-top: 10px; border-radius: 4px;">
+                        <p class="size-option-condition" style="margin-top: 5px;">Wide layout for short cartons.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">
+                <span class="section-number">2</span>
+                Carton Type Options
+            </h2>
+            <p>Choose how sizes are packed inside the carton:</p>
+
+            <div class="size-decision-box">
+                <div class="size-options">
+                    <div class="size-option" style="border-color: var(--primary);">
+                        <span class="size-option-label" style="background: var(--text-main); color: white;">SINGLE
+                            SIZE</span>
+                        <p class="size-option-condition">Carton contains only <strong>one size</strong>.</p>
+                        <img src="assets/SINGLE.png" alt="Single Size Example"
+                            style="width: 100%; border: 1px solid #e2e8f0; margin-top: 10px; border-radius: 4px;">
+                    </div>
+                    <div class="size-option" style="border-color: var(--primary);">
+                        <span class="size-option-label" style="background: var(--text-main); color: white;">RATIO
+                            (MIXED)</span>
+                        <p class="size-option-condition">Carton contains <strong>multiple sizes</strong>.</p>
+                        <!-- Using A5.png for Ratio as requested -->
+                        <img src="assets/A5.png" alt="Ratio Label Example"
+                            style="width: 100%; border: 1px solid #e2e8f0; margin-top: 10px; border-radius: 4px;">
+                        <p class="size-option-condition" style="margin-top: 5px; font-size: 0.65rem;">(Displays size
+                            table with quantities)</p>
+                    </div>
+                </div>
+            </div>
+            <div class="info-box">
+                <ul style="margin: 0; padding-left: 1rem;">
+                    <li><strong>Single:</strong> Enter just the size value (e.g., "XL").</li>
+                    <li><strong>Ratio:</strong> Up to <strong>12 size slots</strong> available (7 pre-filled: XS to 3XL,
+                        plus 5 custom). Enter the size name and quantity for each.</li>
+                    <li><strong>A5 Layout:</strong> Sizes are displayed in <strong>2 rows of 6</strong> with a separator
+                        border between rows.</li>
+                    <li><strong>Custom Layout:</strong> All sizes are displayed in a single row.</li>
+                </ul>
+            </div>
+        </section>
+
+        <div class="page-footer">
+            <img src="/brand-assets/pacd-logo.png" alt="PAC-D" class="footer-logo">
+            <span class="page-number">Page 1 of 4</span>
+            <div class="footer-text">Version 1.1 | February 2026</div>
+        </div>
+    </div>
+
+    <!-- PAGE 2 -->
+    <div class="a4-page" id="page2">
+        <!-- Section 3: Filling in the Label (Moved to Page 2) -->
+        <section class="section">
+            <h2 class="section-title">
+                <span class="section-number">3</span>
+                Filling in the Label
+            </h2>
+            <p>Follow the guide below to complete the label details from your Purchase Order.</p>
+
+            <!-- Instructions Image -->
+            <h3 style="margin-top:0;">1. Mapping Source Data</h3>
+            <div class="instructions-image-container" style="text-align: center;">
+                <img src="assets/instructions.png" alt="Source Data Guide" class="instructions-image"
+                    style="width: 100%; display: inline-block;">
+            </div>
+
+            <div class="info-box">
+                <p><strong>Note:</strong> The highlighted areas on the example order correspond to the input
+                    fields
+                    shown on the next page.</p>
+            </div>
+        </section>
+
+        <div class="page-footer">
+            <img src="/brand-assets/pacd-logo.png" alt="PAC-D" class="footer-logo">
+            <span class="page-number">Page 2 of 4</span>
+            <div class="footer-text">Version 1.1 | February 2026</div>
+        </div>
+    </div>
+
+    <!-- PAGE 3 -->
+    <div class="a4-page" id="page3">
+        <section class="section">
+            <h2 class="section-title">
+                <span class="section-number">3</span>
+                Filling in the Label (Continued)
+            </h2>
+
+            <!-- Inputs Image & Analysis -->
+            <h3>2. Application Inputs</h3>
+            <div class="instructions-image-container" style="text-align: center; margin: 0.1rem 0;">
+                <img src="assets/INPUTS.png" alt="Application Input Form" class="instructions-image"
+                    style="width: 45%; display: inline-block;">
+            </div>
+
+
+        </section>
+
+
+
+        <div class="page-footer">
+            <img src="/brand-assets/pacd-logo.png" alt="PAC-D" class="footer-logo">
+            <span class="page-number">Page 3 of 4</span>
+            <div class="footer-text">Version 1.1 | February 2026</div>
+        </div>
+    </div>
+
+
+
+    <!-- PAGE 4 -->
+    <div class="a4-page" id="page4">
+        <!-- Section 4: Special Classifications -->
+        <section class="section">
+            <h2 class="section-title">
+                <span class="section-number">4</span>
+                Special Classifications
+            </h2>
+            <div class="important-box">
+                <div class="box-title">📦 Homeware Division</div>
+                <p>Select <strong>"H - Homeware"</strong> in the Division dropdown to display the required corner
+                    indicator.</p>
+                <img src="assets/HOMEWARE.png" alt="Homeware Label Example"
+                    style="width: 100%; max-width: 300px; border: 1px solid #f59e0b; margin-top: 10px; border-radius: 4px; display: block;">
+            </div>
+        </section>
+
+        <!-- Section 5: Final Steps -->
+        <section class="section">
+            <h2 class="section-title">
+                <span class="section-number">5</span>
+                Final Steps
+            </h2>
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h4>Review Preview</h4>
+                    <p>Check all details on the live preview before exporting.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h4>Export PDF</h4>
+                    <p>Click the <strong>Export PDF</strong> button. The file will be named automatically.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h4>Print</h4>
+                    <p>Print on <strong>A4</strong> paper with scale set to <strong>"Actual Size"</strong> or
+                        <strong>100%</strong>.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 6: Printing Specs -->
+        <section class="section">
+            <h2 class="section-title">
+                <span class="section-number">6</span>
+                Printing Specs
+            </h2>
+            <ul class="specs-list">
+                <li><strong>Stock:</strong> Pressure sensitive label paper</li>
+                <li><strong>Weight:</strong> 60 GSM or higher</li>
+                <li><strong>Finish:</strong> Matte or low gloss</li>
+                <li><strong>Opacity:</strong> 75% minimum</li>
+            </ul>
+        </section>
+
+        <!-- Section 7: Troubleshooting -->
+        <section class="section">
+            <h2 class="section-title">
+                <span class="section-number">7</span>
+                Troubleshooting
+            </h2>
+            <ul class="specs-list" style="list-style-type: disc; padding-left: 1.5rem;">
+                <li><strong>Text cut off:</strong> Add a space between words to allow wrapping.</li>
+                <li><strong>Corner box missing:</strong> "H" box only for Homeware.</li>
+                <li><strong>Wrong label size:</strong> Verify carton height.</li>
+                <li><strong>Preview issues:</strong> Exported PDF is correct even if mobile preview is off.</li>
+                <li><strong>Size too small:</strong> Ensure "Actual Size" print scale.</li>
+            </ul>
+        </section>
+
+        <div class="page-footer">
+            <img src="/brand-assets/pacd-logo.png" alt="PAC-D" class="footer-logo">
+            <span class="page-number">Page 4 of 4</span>
+            <div class="footer-text">Version 1.1 | February 2026</div>
+        </div>
+    </div>
+
+    <script>
+        async function exportPDF() {
+            const btn = document.getElementById('exportBtn');
+            const btnContainer = document.getElementById('exportBtnContainer');
+
+            btn.innerHTML = '<span class="export-spinner" aria-hidden="true"></span><span>Generating PDF...</span>';
+            btn.disabled = true;
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+
+                // Page 1
+                const page1 = document.getElementById('page1');
+                const canvas1 = await html2canvas(page1, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff',
+                    width: page1.offsetWidth,
+                    height: page1.offsetHeight
+                });
+                pdf.addImage(canvas1.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 210, 297);
+
+                // Page 2
+                pdf.addPage();
+                const page2 = document.getElementById('page2');
+                const canvas2 = await html2canvas(page2, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff',
+                    width: page2.offsetWidth,
+                    height: page2.offsetHeight
+                });
+                pdf.addImage(canvas2.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 210, 297);
+
+                // Page 3
+                pdf.addPage();
+                const page3 = document.getElementById('page3');
+                const canvas3 = await html2canvas(page3, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff',
+                    width: page3.offsetWidth,
+                    height: page3.offsetHeight
+                });
+                pdf.addImage(canvas3.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 210, 297);
+
+                // Page 4
+                pdf.addPage();
+                const page4 = document.getElementById('page4');
+                const canvas4 = await html2canvas(page4, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff',
+                    width: page4.offsetWidth,
+                    height: page4.offsetHeight
+                });
+                pdf.addImage(canvas4.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 210, 297);
+
+                pdf.save('instruction.pdf');
+
+            } catch (err) {
+                console.error('Error:', err);
+                alert('Error generating PDF: ' + err.message + '\n\nPlease try Ctrl+P instead and select "Save as PDF".');
+            }
+
+            btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 17v3h14v-3" /></svg><span>Export PDF</span>';
+            btn.disabled = false;
+        }
+    </script>
+</body>
+
+</html>

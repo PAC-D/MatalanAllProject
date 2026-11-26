@@ -1,0 +1,1282 @@
+:root {
+    --primary: #00205b;
+    /* Navy Blue from Logo */
+    --primary-hover: #001540;
+    --secondary: #e31837;
+    /* Red from Logo */
+
+    --bg-dark: #f8fafc;
+    /* Switch to Light Minimal background as per logo usually sits better on white/light */
+    --bg-card: #ffffff;
+    --bg-glass: rgba(255, 255, 255, 0.9);
+    --border: #e2e8f0;
+
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+    --shadow-glow: 0 4px 20px rgba(0, 32, 91, 0.15);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Outfit', sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Background Decoration */
+.bg-decoration {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #f4f1eb;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* Navbar */
+.navbar {
+    height: 70px;
+    background: var(--bg-glass);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    z-index: 50;
+    box-shadow: var(--shadow-sm);
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.logo-img {
+    height: 48px;
+    width: auto;
+    object-fit: contain;
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.logo-right {
+    height: 28px;
+    width: auto;
+    object-fit: contain;
+}
+
+.navbar h1 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--primary);
+}
+
+.nav-icon-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: white;
+    border: 1px solid var(--border);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: var(--shadow-sm);
+    text-decoration: none;
+}
+
+.nav-icon-btn:hover {
+    background: var(--bg-dark);
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.nav-icon-btn i {
+    width: 18px;
+    height: 18px;
+}
+
+/* Main Content Layout */
+.main-content {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 400px;
+    background: var(--bg-card);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 2rem;
+}
+
+.sidebar-header {
+    margin-bottom: 2rem;
+}
+
+.sidebar-header h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.25rem;
+}
+
+.sidebar-header p {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.section-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--secondary);
+    margin-bottom: 1rem;
+    letter-spacing: 0.05em;
+}
+
+.form-section {
+    margin-bottom: 1.5rem;
+}
+
+.form-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 2rem 0;
+}
+
+/* Layout Grids */
+.input-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    /* Spacing for grid rows */
+}
+
+/* Form Elements */
+.form-group {
+    margin-bottom: 1rem;
+    position: relative;
+}
+
+/* Floating Label Logic */
+.floating-group {
+    position: relative;
+}
+
+.floating-group input,
+.floating-group textarea {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 0.75rem 0.5rem;
+    color: var(--text-main);
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: all 0.2s;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.floating-group textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.floating-group label {
+    position: absolute;
+    top: 50%;
+    left: 0.75rem;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 400;
+    pointer-events: none;
+    transition: all 0.2s ease;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+.floating-group textarea+label {
+    top: 1.5rem;
+}
+
+/* Focus / Filled State for floating labels */
+.floating-group input:focus,
+.floating-group:focus-within input,
+.floating-group input:not(:placeholder-shown),
+.floating-group textarea:focus,
+.floating-group:focus-within textarea,
+.floating-group textarea:not(:placeholder-shown) {
+    border-color: var(--primary);
+    background: #ffffff;
+    box-shadow: 0 0 0 2px rgba(0, 32, 91, 0.1);
+    padding-top: 1.25rem;
+    padding-bottom: 0.25rem;
+}
+
+.floating-group input:focus+label,
+.floating-group:focus-within label,
+.floating-group input:not(:placeholder-shown)+label,
+.floating-group textarea:focus+label,
+.floating-group:focus-within label,
+.floating-group textarea:not(:placeholder-shown)+label {
+    top: 0.5rem;
+    font-size: 0.7rem;
+    color: var(--primary);
+    font-weight: 600;
+    transform: none;
+}
+
+/* Standard Selects */
+.custom-select {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem;
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 0.95rem;
+    cursor: pointer;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.custom-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(0, 32, 91, 0.1);
+}
+
+/* Buttons */
+.primary-btn {
+    width: 100%;
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 99px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(0, 32, 91, 0.2);
+}
+
+.primary-btn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 32, 91, 0.25);
+}
+
+/* PREVIEW AREA */
+.preview-stage {
+    flex: 1;
+    background: #e7e3dc;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.toolbar-floating {
+    position: absolute;
+    top: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 0.5rem 0.5rem 0.5rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    z-index: 20;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    width: auto;
+    max-width: 90%;
+}
+
+.toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    background-color: var(--secondary);
+    border-radius: 50%;
+}
+
+.status-text {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.zoom-controls {
+    display: flex;
+    align-items: center;
+    background: #f1f5f9;
+    border-radius: 99px;
+    padding: 0.25rem;
+}
+
+.zoom-controls button {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.zoom-controls button:hover {
+    background: white;
+    color: var(--primary);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.zoom-controls button i {
+    width: 16px;
+    height: 16px;
+}
+
+.zoom-controls span {
+    font-size: 0.875rem;
+    padding: 0 0.75rem;
+    min-width: 60px;
+    text-align: center;
+    color: var(--text-main);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+
+/* A4 Page & Label Base Styling - Keeping functional styles */
+.canvas-wrapper {
+    flex: 1;
+    overflow: auto;
+    display: flex;
+    justify-content: center;
+    padding-top: 120px;
+    /* Space for floating toolbar */
+    padding-bottom: 4rem;
+}
+
+.a4-page {
+    width: 210mm;
+    height: 297mm;
+    background-color: white;
+    box-shadow: 0 20px 50px rgba(0, 32, 91, 0.15);
+    /* Tinted shadow */
+    position: relative;
+    color: black;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transform-origin: top center;
+    transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* Label Inner Styling (Preserve logic) */
+.label-container {
+    box-sizing: border-box;
+    border: 2px solid #0f172a;
+    border-radius: 2rem;
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    margin: 0 auto;
+    background: white;
+    font-family: 'Inter', sans-serif;
+    /* Restore Inter for the entire label */
+}
+
+.label-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    /* Increased for better spacing on single lines */
+    justify-content: center;
+    /* Center content vertically for symmetry */
+    height: 100%;
+    font-family: 'Inter', sans-serif;
+    padding: 0;
+}
+
+.row {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    /* Reduced from 2rem to save horizontal space */
+}
+
+.label-key {
+    min-width: 200px;
+    font-size: 14pt;
+    font-weight: 600;
+    color: #334155;
+    /* Slate 700 */
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding-top: 0;
+}
+
+.label-value {
+    font-size: 18pt;
+    font-weight: 800;
+    color: #0f172a;
+    flex: 1;
+    line-height: 1.3;
+    word-break: break-word;
+}
+
+/* Corner Box */
+.corner-box {
+    position: absolute;
+    bottom: 3rem;
+    right: 3rem;
+    width: 150px;
+    height: 150px;
+    border: 4px solid #0f172a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 8rem;
+    font-weight: 800;
+    color: #0f172a;
+    background-color: white;
+    z-index: 10;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Styles for Page Modes */
+.a4-page[data-size="a5"] {
+    padding: 3mm;
+    justify-content: center;
+    gap: 0;
+}
+
+.a4-page[data-size="a5"] .label-container {
+    width: 100%;
+    height: 50%;
+    border-radius: 30px;
+    margin: 0;
+    padding: 2.5rem;
+    /* Restored default padding */
+}
+
+/* Dynamic Padding Reduction Class */
+.label-container.tight-padding {
+    padding: 1.5rem !important;
+}
+
+/* Also reduce gap when tight padding is active to help fit content */
+.label-container.tight-padding .label-content {
+    gap: 0.4rem;
+}
+
+.a4-page[data-size="custom"] {
+    width: 297mm;
+    height: 210mm;
+    padding: 3mm;
+    justify-content: center;
+    align-items: center;
+    gap: 0;
+}
+
+.a4-page[data-size="custom"] .label-container {
+    width: 25cm;
+    height: 10cm;
+    margin: 0;
+    border-radius: 30px;
+    padding: 2.5rem;
+    /* Ensure symmetric padding */
+}
+
+.a4-page[data-size="custom"] .label-content {
+    gap: 0.4rem;
+    /* Default breathable gap */
+    justify-content: center;
+    /* Fix vertical symmetry */
+}
+
+/* Custom size specific tight override */
+.a4-page[data-size="custom"] .label-container.tight-padding .label-content {
+    gap: 0.15rem;
+    /* Ultra tight when overflowing */
+}
+
+.a4-page[data-size="custom"] .label-key {
+    font-size: 13pt;
+    min-width: 240px;
+}
+
+.a4-page[data-size="custom"] .label-value {
+    font-size: 16pt;
+}
+
+/* Overlap protections */
+/* Overlap protections */
+.label-content.has-corner-box .row:nth-last-child(-n+3) {
+    margin-right: 180px;
+}
+
+.a4-page[data-size="custom"] .label-content.has-corner-box .row:nth-last-child(-n+5) {
+    margin-right: 180px;
+}
+
+/* Custom size specific overrides */
+.a4-page[data-size="custom"] .line-clamp-2 {
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+}
+
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* MODAL */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.modal.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+}
+
+.modal-content {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    animation: modalSlide 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalSlide {
+    from {
+        transform: translateY(40px) scale(0.95);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.modal-header h2 {
+    font-size: 1.25rem;
+    color: white;
+}
+
+.close-modal {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 8px;
+}
+
+.close-modal:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.modal-body {
+    flex: 1;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 1rem;
+    padding: 1rem;
+    display: flex;
+    justify-content: center;
+}
+
+.instruction-img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
+
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+    body {
+        overflow-y: auto;
+    }
+
+    .app-container {
+        height: auto;
+        overflow: visible;
+    }
+
+    .main-content {
+        flex-direction: column;
+        overflow: visible;
+    }
+
+    .navbar {
+        position: sticky;
+        top: 0;
+    }
+
+    .sidebar {
+        width: 100%;
+        max-height: none;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        overflow: visible;
+    }
+
+    .preview-stage {
+        padding: 0;
+        min-height: 100vh;
+        overflow: visible;
+    }
+
+    .toolbar-floating {
+        position: sticky;
+        top: 1rem;
+        margin: 1rem auto;
+        width: auto;
+        justify-content: center;
+        padding: 0.5rem 1rem;
+    }
+
+    .toolbar-left,
+    .status-text {
+        display: none;
+    }
+
+    .canvas-wrapper {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+        align-items: flex-start;
+    }
+
+    .a4-page {
+        transform: scale(0.6);
+        margin-bottom: -100mm;
+    }
+}
+
+@media (max-width: 600px) {
+    .navbar {
+        padding: 0 0.75rem;
+        height: 60px;
+    }
+
+    .navbar h1 {
+        font-size: 0.875rem;
+        margin-left: 0.25rem;
+    }
+
+    .logo-img {
+        height: 32px;
+        width: auto;
+    }
+
+    .logo-right {
+        height: 20px;
+        width: auto;
+    }
+
+    .nav-icon-btn {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.8rem;
+    }
+
+    .nav-icon-btn span {
+        display: none;
+    }
+
+    .sidebar {
+        padding: 1.5rem 1rem;
+    }
+
+    .input-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .zoom-controls {
+        display: none;
+    }
+
+    /* Hide zoom on mobile */
+
+    .primary-btn {
+        width: auto;
+        padding: 0.5rem 1rem;
+    }
+
+    .a4-page {
+        transform: scale(0.42);
+        margin-bottom: -170mm;
+    }
+
+    /* Mobile Alignment Fixes */
+    .toolbar-floating {
+        justify-content: center;
+    }
+}
+
+/* NEW STYLES for V2 Fields */
+
+/* Sidebar Size Grid */
+.size-inputs-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.75rem;
+}
+
+.form-group.mini input {
+    padding: 0.5rem;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.form-group.mini label {
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    width: 100%;
+    text-align: center;
+    font-size: 0.75rem;
+    top: 50%;
+}
+
+.form-group.mini input:focus+label,
+.form-group.mini input:not(:placeholder-shown)+label {
+    top: -0.5rem;
+    font-size: 0.7rem;
+    background: var(--bg-card);
+    /* Mask line */
+    padding: 0 4px;
+    width: auto;
+}
+
+
+/* Size Table on Label */
+.size-row {
+    align-items: flex-start;
+    /* Align label key to top of table */
+}
+
+.size-table-container {
+    flex: 1;
+    width: 100%;
+}
+
+.size-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 2px solid #0f172a;
+    table-layout: fixed;
+    /* Ensures all cells same size */
+}
+
+.size-table th,
+.size-table td {
+    border: 1px solid #0f172a;
+    text-align: center;
+    padding: 4px 2px;
+    font-size: 12pt;
+    font-weight: 700;
+    /* width: 12.5%;  Removed fixed width for dynamic columns */
+    vertical-align: middle;
+}
+
+.size-table th {
+    background-color: transparent;
+    font-weight: 800;
+    font-size: 11pt;
+}
+
+.total-cell {
+    font-weight: 900;
+}
+
+/* Separator between 2 row groups in A5 mode */
+.size-row-separator td,
+.size-row-separator th {
+    border-top: 2px solid #0f172a;
+}
+
+/* Specific Tweak for Homeware Condition */
+/* When Corner Box is visible, we might need explicitly shrink the size table text if it gets too cramped */
+/* A5 Specific Shrink */
+.a4-page[data-size="a5"] .label-content.has-corner-box .size-table th,
+.a4-page[data-size="a5"] .label-content.has-corner-box .size-table td {
+    font-size: 8pt;
+    /* Reduced from 10pt */
+    padding: 1px;
+}
+
+/* Custom Size Specific Shrink (Keep 10pt or adjust if needed) */
+.a4-page[data-size="custom"] .label-content.has-corner-box .size-table th,
+.a4-page[data-size="custom"] .label-content.has-corner-box .size-table td {
+    font-size: 10pt;
+    padding: 2px;
+}
+
+/* Adjust row margin for specific corner box avoidance */
+.label-content.has-corner-box .row.size-row {
+    margin-right: 170px;
+    /* Force avoidance */
+}
+
+/* Footer Styling */
+/* Footer Styling */
+.app-footer {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    background: transparent;
+    width: 100%;
+}
+
+/* Desktop: Absolute position in bottom-right */
+@media (min-width: 1025px) {
+    .app-footer {
+        position: absolute;
+        bottom: 1rem;
+        right: 2rem;
+        text-align: right;
+        padding: 0;
+        width: auto;
+        z-index: 100;
+        pointer-events: none;
+    }
+
+    .app-footer a {
+        pointer-events: auto;
+    }
+}
+
+.app-footer a {
+    pointer-events: auto;
+    /* Re-enable clicks on link */
+}
+
+/* Separator Line (|) */
+.app-footer .separator {
+    opacity: 0.5;
+    margin: 0 0.5rem;
+}
+
+/* Developer Link */
+.app-footer .dev-link {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: opacity 0.2s;
+}
+
+.app-footer .dev-link:hover {
+    opacity: 0.8;
+}
+
+/* New Size Grid Styling */
+.size-pair {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.2s;
+}
+
+.size-pair:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(0, 32, 91, 0.1);
+}
+
+.size-header-input {
+    width: 100%;
+    border: none;
+    background: #f1f5f9;
+    padding: 4px 2px;
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    outline: none;
+}
+
+.size-header-input:focus {
+    background: #e2e8f0;
+    color: var(--primary);
+}
+
+.size-qty-input {
+    width: 100%;
+    border: none;
+    text-align: center;
+    padding: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    outline: none;
+    /* Remove standard input styles */
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.size-qty-input::-webkit-outer-spin-button,
+.size-qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Matalan programme UI — application chrome only; print label styles stay unchanged. */
+:root {
+    --primary: #0a203b;
+    --primary-hover: #06182e;
+    --secondary: #bd1235;
+    --bg-dark: #f4f1eb;
+    --bg-card: #faf9f6;
+    --border: #d7d3cb;
+    --text-main: #102238;
+    --text-muted: #6f7881;
+}
+
+body {
+    background: #f4f1eb;
+    color: var(--text-main);
+}
+
+.bg-decoration {
+    background: #f4f1eb;
+}
+
+.navbar {
+    height: 88px;
+    padding: 0 clamp(24px, 4.2vw, 64px);
+    background: rgba(243, 240, 233, .84);
+    border-bottom: 1px solid #d9d6cf;
+    box-shadow: none;
+    backdrop-filter: blur(18px);
+}
+
+.tool-pacd { display: inline-flex; align-items: center; }
+
+.tool-pacd .logo-img {
+    width: 86px;
+    height: auto;
+    object-fit: contain;
+}
+
+.nav-right { gap: 25px; }
+
+.logo-right {
+    width: 112px;
+    height: auto;
+}
+
+.nav-icon-btn {
+    min-height: 44px;
+    padding: 0 15px;
+    gap: 9px;
+    color: #0a203b;
+    background: rgba(255,255,255,.43);
+    border-color: rgba(10,32,59,.16);
+    border-radius: 0;
+    box-shadow: inset 0 1px rgba(255,255,255,.8), 0 8px 25px rgba(10,32,59,.07);
+    backdrop-filter: blur(16px);
+    font-size: .78rem;
+    font-weight: 700;
+}
+
+.nav-icon-btn:hover {
+    color: #0a203b;
+    background: rgba(255,255,255,.78);
+    border-color: rgba(189,18,53,.42);
+    transform: translateY(-1px);
+}
+
+.main-content {
+    min-height: 0;
+    gap: 0;
+}
+
+.sidebar {
+    width: clamp(440px, 31vw, 540px);
+    padding: 0 34px 56px;
+    background: rgba(248, 246, 241, .98);
+    border-right: 1px solid #d4d0c8;
+    scrollbar-color: #aaa69f transparent;
+    scrollbar-width: thin;
+}
+
+.sidebar-header {
+    margin: 0 -34px 30px;
+    padding: 30px 34px 28px;
+    color: #fff;
+    background: #0a203b;
+    border-left: 5px solid #bd1235;
+}
+
+.panel-index {
+    display: block;
+    margin-bottom: 12px;
+    color: #ec8ca0;
+    font-size: .64rem;
+    font-weight: 800;
+    letter-spacing: .17em;
+}
+
+.sidebar-header h2 {
+    margin-bottom: 8px;
+    color: #fff;
+    font-size: clamp(1.35rem, 2vw, 1.8rem);
+    letter-spacing: -.035em;
+}
+
+.sidebar-header p {
+    max-width: 390px;
+    color: #aebdca;
+    font-size: .86rem;
+    line-height: 1.55;
+}
+
+.section-label {
+    margin-bottom: 14px;
+    color: #bd1235;
+    font-size: .66rem;
+    letter-spacing: .14em;
+}
+
+.form-section { margin-bottom: 22px; }
+
+.form-divider {
+    margin: 26px 0;
+    background: #d7d3cb;
+}
+
+.input-grid { gap: 12px; }
+
+.floating-group input,
+.floating-group textarea,
+.custom-select {
+    min-height: 52px;
+    color: #102238;
+    background-color: rgba(255, 255, 255, .75);
+    border-color: #cbc7bf;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.floating-group textarea { min-height: 76px; }
+
+.floating-group input:focus,
+.floating-group:focus-within input,
+.floating-group input:not(:placeholder-shown),
+.floating-group textarea:focus,
+.floating-group:focus-within textarea,
+.floating-group textarea:not(:placeholder-shown),
+.custom-select:focus {
+    border-color: #bd1235;
+    box-shadow: 0 0 0 3px rgba(189, 18, 53, .08);
+}
+
+.floating-group input:focus + label,
+.floating-group:focus-within label,
+.floating-group input:not(:placeholder-shown) + label,
+.floating-group textarea:focus + label,
+.floating-group textarea:not(:placeholder-shown) + label {
+    color: #bd1235;
+}
+
+.size-inputs-grid { gap: 8px; }
+
+.size-pair {
+    border-color: #cbc7bf;
+    border-radius: 0;
+}
+
+.size-pair:focus-within {
+    border-color: #bd1235;
+    box-shadow: 0 0 0 3px rgba(189, 18, 53, .08);
+}
+
+.size-header-input { background: #e9e6df; }
+
+.preview-stage {
+    min-width: 0;
+    background: #e7e3dc;
+}
+
+.toolbar-floating {
+    top: 24px;
+    width: min(620px, calc(100% - 48px));
+    min-height: 58px;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 7px 7px 7px 20px;
+    border-color: #c8c4bc;
+    border-radius: 0;
+    box-shadow: 0 12px 32px rgba(10, 32, 59, .12);
+}
+
+.status-dot { background: #bd1235; }
+
+.status-text {
+    color: #0a203b;
+    font-size: .75rem;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.zoom-controls {
+    background: #eeece7;
+    border-radius: 0;
+}
+
+.zoom-controls button { border-radius: 0; }
+
+.primary-btn {
+    width: auto;
+    min-height: 44px;
+    padding: 0 20px;
+    background: #bd1235;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.primary-btn:hover {
+    background: #9f0d2b;
+    box-shadow: none;
+}
+
+.canvas-wrapper { padding-top: 112px; }
+
+.a4-page {
+    box-shadow: 0 24px 60px rgba(10, 32, 59, .18);
+}
+
+.app-footer {
+    color: #65707a;
+    font-size: .68rem;
+}
+
+.app-footer .dev-link { color: #0a203b; }
+
+@media (max-width: 1180px) {
+    .sidebar { width: 420px; padding-right: 26px; padding-left: 26px; }
+    .sidebar-header { margin-right: -26px; margin-left: -26px; padding-right: 26px; padding-left: 26px; }
+    .toolbar-floating { width: calc(100% - 32px); }
+}
+
+@media (max-width: 1024px) {
+    .navbar { position: sticky; height: 78px; }
+    .main-content { gap: 0; }
+    .sidebar { width: 100%; padding-bottom: 40px; }
+    .preview-stage { min-height: 850px; }
+    .toolbar-floating { top: 14px; margin: 0 auto; }
+}
+
+@media (max-width: 680px) {
+    .navbar { height: 76px; padding-inline: 20px; }
+    .tool-pacd .logo-img { width: 72px; }
+    .nav-right { gap: 14px; }
+    .logo-right { display: block; width: 88px; }
+    .nav-icon-btn span { display: none; }
+    .nav-icon-btn { width: 40px; min-height: 40px; padding: 0; justify-content: center; }
+    .sidebar { padding-right: 18px; padding-left: 18px; }
+    .sidebar-header { margin-right: -18px; margin-left: -18px; padding-right: 20px; padding-left: 20px; }
+    .input-grid { grid-template-columns: 1fr; }
+    .toolbar-floating { width: calc(100% - 20px); padding-left: 10px; }
+    .zoom-controls span { min-width: 48px; padding: 0 5px; }
+    .primary-btn { padding: 0 13px; }
+}
