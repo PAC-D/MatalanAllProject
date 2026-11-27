@@ -17,6 +17,11 @@
 </head>
 
 <body>
+    <script>
+        if (window.self !== window.top || new URLSearchParams(window.location.search).has('embedded')) {
+            document.body.classList.add('embedded');
+        }
+    </script>
     <div class="bg-decoration"></div>
 
     <div class="app-container">

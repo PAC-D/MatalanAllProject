@@ -1280,3 +1280,100 @@ body {
     .zoom-controls span { min-width: 48px; padding: 0 5px; }
     .primary-btn { padding: 0 13px; }
 }
+
+/* Admin portal embed: the portal owns the persistent navigation and branding. */
+body.embedded {
+    min-height: 100%;
+    background: transparent;
+}
+
+body.embedded .navbar,
+body.embedded .app-footer {
+    display: none;
+}
+
+body.embedded .app-container {
+    height: 100vh;
+}
+
+body.embedded .sidebar-header {
+    padding-top: 24px;
+}
+
+body.embedded .toolbar-floating {
+    top: 18px;
+}
+
+@media (max-width: 1024px) {
+    body.embedded .app-container {
+        height: auto;
+        min-height: 100%;
+    }
+}
+
+/* The admin shell reduces the iframe width on laptops. Keep the working
+   split view until the embedded tool is genuinely tablet-sized. */
+@media (min-width: 701px) and (max-width: 1024px) {
+    body.embedded {
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    body.embedded .app-container {
+        height: 100vh;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    body.embedded .main-content {
+        min-height: 0;
+        flex-direction: row;
+        overflow: hidden;
+    }
+
+    body.embedded .sidebar {
+        width: clamp(330px, 38vw, 380px);
+        max-height: none;
+        flex: 0 0 clamp(330px, 38vw, 380px);
+        padding: 0 22px 42px;
+        overflow-y: auto;
+        border-right: 1px solid #d4d0c8;
+        border-bottom: 0;
+    }
+
+    body.embedded .sidebar-header {
+        margin-right: -22px;
+        margin-left: -22px;
+        padding-right: 22px;
+        padding-left: 22px;
+    }
+
+    body.embedded .preview-stage {
+        min-width: 0;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    body.embedded .toolbar-floating {
+        position: absolute;
+        top: 14px;
+        width: calc(100% - 24px);
+        margin: 0;
+    }
+
+    body.embedded .toolbar-left,
+    body.embedded .status-text {
+        display: flex;
+    }
+
+    body.embedded .canvas-wrapper {
+        padding-top: 96px;
+        padding-bottom: 30px;
+        align-items: flex-start;
+    }
+
+    body.embedded .a4-page {
+        margin-bottom: 0;
+        transform: none;
+    }
+}

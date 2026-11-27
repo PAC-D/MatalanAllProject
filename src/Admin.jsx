@@ -44,6 +44,23 @@ function CalculatorIcon() {
   );
 }
 
+function LabelIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M3.5 11.2 11.2 3.5H20a.5.5 0 0 1 .5.5v8.8l-7.7 7.7a1.8 1.8 0 0 1-2.6 0l-6.7-6.7a1.8 1.8 0 0 1 0-2.6Z" />
+      <circle cx="16.5" cy="7.5" r="1.5" />
+    </svg>
+  );
+}
+
+function ReportIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M5 3.5h9l5 5V20.5H5zM14 3.5v5h5M8.5 13h7M8.5 16.5h7" />
+    </svg>
+  );
+}
+
 function TrashIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -61,7 +78,17 @@ function LogoutIcon() {
 }
 
 export default function Admin() {
-  const isPriceCalculator = window.location.pathname.replace(/\/+$/, '') === '/admin/pricecalculator';
+  const pathname = window.location.pathname.replace(/\/+$/, '');
+  const isPriceCalculator = pathname === '/admin/pricecalculator';
+  const isLabelGenerator = pathname === '/admin/label-generator';
+  const isTool = isPriceCalculator || isLabelGenerator;
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    try {
+      return window.localStorage.getItem('matalan-admin-sidebar-collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [calculatorHeight, setCalculatorHeight] = useState(980);
   const [registrants, setRegistrants] = useState([]);
   const [loadState, setLoadState] = useState('loading');
@@ -82,9 +109,13 @@ export default function Admin() {
     || null;
 
   useEffect(() => {
-    document.title = isPriceCalculator ? 'Price Calculator | Matalan Admin' : 'Registrants | Matalan Admin';
+    document.title = isPriceCalculator
+      ? 'Price Calculator | Matalan Admin'
+      : isLabelGenerator
+        ? 'Label Generator | Matalan Admin'
+        : 'Registrants | Matalan Admin';
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#081d36');
-    if (isPriceCalculator) {
+    if (isTool) {
       setLoadState('ready');
       return undefined;
     }
@@ -105,7 +136,7 @@ export default function Admin() {
         if (isActive) setLoadState('error');
       });
     return () => { isActive = false; };
-  }, [isPriceCalculator]);
+  }, [isLabelGenerator, isPriceCalculator, isTool]);
 
   useEffect(() => {
     if (!isPriceCalculator) return undefined;
@@ -139,35 +170,63 @@ export default function Admin() {
     }
   }
 
-  async function handleLogout() {
-    try {
-      await fetch('/api/admin/registrations', {
-        cache: 'no-store',
-        headers: { Authorization: `Basic ${window.btoa(`logout:${Date.now()}`)}` },
-      });
-    } finally {
-      window.location.replace('/');
-    }
+  function handleLogout() {
+    window.location.replace('/');
+  }
+
+  function toggleSidebar() {
+    setIsSidebarCollapsed((current) => {
+      const next = !current;
+      try {
+        window.localStorage.setItem('matalan-admin-sidebar-collapsed', String(next));
+      } catch {
+        // The sidebar still works when storage is unavailable.
+      }
+      return next;
+    });
   }
 
   return (
-    <main className="admin-page">
+    <main className={`admin-page ${isSidebarCollapsed ? 'is-sidebar-collapsed' : ''}`}>
       <aside className="admin-sidebar">
         <div className="admin-sidebar-brand">
           <img src={pacdLogo} alt="PAC-D" />
           <span>ADMIN</span>
+          <button
+            className="admin-collapse-toggle"
+            type="button"
+            onClick={toggleSidebar}
+            aria-label={isSidebarCollapsed ? 'Expand admin sidebar' : 'Collapse admin sidebar'}
+            title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {isSidebarCollapsed ? '>>' : '<<'}
+          </button>
         </div>
 
         <nav className="admin-nav" aria-label="Admin navigation">
           <span className="admin-nav-label">PROGRAMME</span>
-          <a className={`admin-nav-item ${isPriceCalculator ? '' : 'is-active'}`} href="/admin" aria-current={isPriceCalculator ? undefined : 'page'}>
+          <a className={`admin-nav-item ${isTool ? '' : 'is-active'}`} href="/admin" aria-current={isTool ? undefined : 'page'} title="Registrants">
             <RegistrantsIcon />
             <span>Registrants</span>
             <strong>{registrants.length}</strong>
           </a>
-          <a className={`admin-nav-item ${isPriceCalculator ? 'is-active' : ''}`} href="/admin/pricecalculator" aria-current={isPriceCalculator ? 'page' : undefined}>
+          <a className={`admin-nav-item ${isPriceCalculator ? 'is-active' : ''}`} href="/admin/pricecalculator" aria-current={isPriceCalculator ? 'page' : undefined} title="Price calculator">
             <CalculatorIcon />
             <span>Price calculator</span>
+          </a>
+          <a className={`admin-nav-item ${isLabelGenerator ? 'is-active' : ''}`} href="/admin/label-generator" aria-current={isLabelGenerator ? 'page' : undefined} title="Label generator">
+            <LabelIcon />
+            <span>Label generator</span>
+          </a>
+          <a
+            className="admin-nav-item admin-report-link"
+            href="https://matalan.pac-d.com/carton-supply-report/"
+            target="_blank"
+            rel="noreferrer"
+            title="Go to carton supply report"
+          >
+            <ReportIcon />
+            <span>Go to carton supply report</span>
           </a>
         </nav>
 
@@ -176,7 +235,7 @@ export default function Admin() {
           <strong>PHASE 3</strong>
           <button className="admin-logout" type="button" onClick={handleLogout}>
             <LogoutIcon />
-            Logout
+            <span>Logout</span>
           </button>
         </div>
       </aside>
@@ -197,24 +256,25 @@ export default function Admin() {
         </header>
 
         <nav className="admin-mobile-nav" aria-label="Admin navigation">
-          <a className={isPriceCalculator ? '' : 'is-active'} href="/admin">Registrants</a>
+          <a className={isTool ? '' : 'is-active'} href="/admin">Registrants</a>
           <a className={isPriceCalculator ? 'is-active' : ''} href="/admin/pricecalculator">Price calculator</a>
+          <a className={isLabelGenerator ? 'is-active' : ''} href="/admin/label-generator">Label generator</a>
         </nav>
 
-        {isPriceCalculator ? (
+        {isTool ? (
           <div className="admin-content admin-calculator-content">
             <header className="admin-page-heading">
               <div>
                 <span className="admin-eyebrow">COMMERCIAL TOOL</span>
-                <h1>Price calculator</h1>
+                <h1>{isPriceCalculator ? 'Price calculator' : 'Label generator'}</h1>
               </div>
             </header>
-            <section className="admin-calculator-panel" aria-label="Matalan price calculator">
+            <section className={`admin-calculator-panel ${isLabelGenerator ? 'admin-label-generator-panel' : ''}`} aria-label={isPriceCalculator ? 'Matalan price calculator' : 'Matalan label generator'}>
               <iframe
-                className="admin-calculator-frame"
-                src="/admin/pricecalculator/app/index.html"
-                title="Matalan price calculator with commercial breakdown"
-                style={{ height: `${calculatorHeight}px` }}
+                className={`admin-calculator-frame ${isLabelGenerator ? 'admin-label-generator-frame' : ''}`}
+                src={isPriceCalculator ? '/admin/pricecalculator/app/index.html' : '/label-generator/index.html?embedded=1'}
+                title={isPriceCalculator ? 'Matalan price calculator with commercial breakdown' : 'Matalan shipping label generator'}
+                style={isPriceCalculator ? { height: `${calculatorHeight}px` } : undefined}
               />
             </section>
           </div>

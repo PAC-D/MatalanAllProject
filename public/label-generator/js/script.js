@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const label2 = document.getElementById('label2');
     const template = document.getElementById('labelTemplate');
     const downloadBtn = document.getElementById('downloadBtn');
+    const canvasWrapper = document.querySelector('.canvas-wrapper');
+    const isEmbedded = document.body.classList.contains('embedded');
 
     // State
     let currentZoom = 1;
@@ -43,18 +45,35 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('zoomOut').onclick = () => setZoom(currentZoom - 0.1);
 
     function setZoom(val) {
-        currentZoom = Math.max(0.5, Math.min(2, val));
-        printArea.style.transform = `scale(${currentZoom})`;
+        currentZoom = Math.max(isEmbedded ? 0.35 : 0.5, Math.min(2, val));
+        if (isEmbedded) {
+            printArea.style.transform = 'none';
+            printArea.style.zoom = currentZoom;
+        } else {
+            printArea.style.transform = `scale(${currentZoom})`;
+        }
         document.querySelector('.zoom-controls span').textContent = `${Math.round(currentZoom * 100)}%`;
+    }
+
+    function fitPreview() {
+        if (!isEmbedded || !canvasWrapper) return;
+        const pageWidth = sizeSelector.value === 'custom' ? 1123 : 794;
+        const availableWidth = Math.max(0, canvasWrapper.clientWidth - 36);
+        setZoom(Math.min(1, availableWidth / pageWidth));
     }
 
     function updateLayout() {
         const size = sizeSelector.value;
         printArea.setAttribute('data-size', size);
+        requestAnimationFrame(fitPreview);
     }
 
     // Initial call to set layout attribute
     updateLayout();
+
+    if (isEmbedded && canvasWrapper && 'ResizeObserver' in window) {
+        new ResizeObserver(fitPreview).observe(canvasWrapper);
+    }
 
     function updateLabels() {
         // Gather Data
@@ -262,6 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // CLONE STRATEGY
         const clone = element.cloneNode(true);
         clone.style.transform = 'none';
+        clone.style.zoom = '1';
         clone.style.margin = '0';
         clone.style.boxShadow = 'none';
 
