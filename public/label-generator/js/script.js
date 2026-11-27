@@ -1,4 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const isEmbedded = window.self !== window.top
+        || new URLSearchParams(window.location.search).has('embedded');
+    if (isEmbedded) document.body.classList.add('embedded');
+
     // Elements
     const form = document.getElementById('labelForm');
     const sizeSelector = document.getElementById('sizeSelector');
@@ -8,7 +12,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const template = document.getElementById('labelTemplate');
     const downloadBtn = document.getElementById('downloadBtn');
     const canvasWrapper = document.querySelector('.canvas-wrapper');
-    const isEmbedded = document.body.classList.contains('embedded');
 
     // State
     let currentZoom = 1;

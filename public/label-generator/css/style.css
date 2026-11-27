@@ -1297,8 +1297,10 @@ body.embedded .app-container {
 }
 
 body.embedded .sidebar-header {
-    padding-top: 24px;
+    display: none;
 }
+
+body.embedded .sidebar { padding-top: 28px; }
 
 body.embedded .toolbar-floating {
     top: 18px;
@@ -1335,17 +1337,10 @@ body.embedded .toolbar-floating {
         width: clamp(330px, 38vw, 380px);
         max-height: none;
         flex: 0 0 clamp(330px, 38vw, 380px);
-        padding: 0 22px 42px;
+        padding: 28px 22px 42px;
         overflow-y: auto;
         border-right: 1px solid #d4d0c8;
         border-bottom: 0;
-    }
-
-    body.embedded .sidebar-header {
-        margin-right: -22px;
-        margin-left: -22px;
-        padding-right: 22px;
-        padding-left: 22px;
     }
 
     body.embedded .preview-stage {
